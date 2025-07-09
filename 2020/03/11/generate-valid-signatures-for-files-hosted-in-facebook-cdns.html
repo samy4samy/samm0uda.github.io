@@ -66,25 +66,30 @@
 
 <p><strong>Exploitation</strong></p>
 
-<font size="2">`POST /ads/tools/text_overlay_validation_with_crops/async/ <br />&lt;/br&gt;Host: www.facebook.com<br />&lt;/br&gt;<br />&lt;/br&gt;__a=<strong>1</strong>&amp;<br />&lt;/br&gt;fb_dtsg=<strong>YOUR_CSRF_TOKEN</strong>&amp;<br />&lt;/br&gt;image_position_to_crops[0]=<strong>{"url":"<URL> ","width":960,"height":960,"crops":[100,0,526,395]}&lt;/strong&gt;`&lt;/font&gt;
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>POST /ads/tools/text_overlay_validation_with_crops/async/
+Host: www.facebook.com
 
-where &lt;URL&gt; is the URL to a CDN file. The response should return the same URL with the signature parameters added to it. Here is an example of the returned URL:
+__a=1<span class="err">&amp;</span>fb_dtsg=YOUR_CSRF_TOKEN<span class="err">&amp;</span>image_position_to_crops[0]={"url":"<span class="nt">&lt;URL&gt;</span>","width":960,"height":960,"crops":[100,0,526,395]}
+</code></pre></div></div>
 
+<p>where &lt;URL&gt; is the URL to a CDN file. The response should return the same URL with the signature parameters added to it. Here is an example of the returned URL:</p>
+
+<pre><code>
 https://scontent.xx.fbcdn.net/hphotos-xap1/v/t39.2365-6/**s526x395**/10734332_858877080824977_1850649729_n.jpg?**oh**=b1fa2b10cef8aaee779dbac57f23db6f&amp;**oe**=5E812361
+</code></pre>
 
-The highlighted part shows the cropping options chosen in **crops** field in the request. and the added oh and oe parameters. This may not work sometimes unless we specify valid crops options which are compatible with the supplied image file.
+<p>The highlighted part shows the cropping options chosen in <strong>crops</strong> field in the request. and the added oh and oe parameters. This may not work sometimes unless we specify valid crops options which are compatible with the supplied image file.</p>
 
-**Impact**
+<p><strong>Impact</strong></p>
 
-This could be used to access files uploaded by Facebook users which are deleted or their privacy settings have been changed. Also, this could be used to massively download files by searching for URLs with old timestamp and generating new ones. This may also work with files hosted in internal CDNs like interncache-frc.fbcdn.net ( but no way to access the content from outside even with correct signature unless we have an SSRF bug or a way to internally pull the content)
+<p>This could be used to access files uploaded by Facebook users which are deleted or their privacy settings have been changed. Also, this could be used to massively download files by searching for URLs with old timestamp and generating new ones. This may also work with files hosted in internal CDNs like interncache-frc.fbcdn.net ( but no way to access the content from outside even with correct signature unless we have an SSRF bug or a way to internally pull the content)</p>
 
-**Timeline**
+<p><strong>Timeline</strong></p>
 
-Feb 4, 2020 — Report Sent  
-Feb 18, 2020 — Acknowledged by Facebook  
-Feb 26, 2020 — Fixed by Facebook  
-Feb 26, 2020 — Bounty Awarded by Facebook
-</URL></strong></font>
+<p>Feb 4, 2020 — Report Sent<br />
+Feb 18, 2020 — Acknowledged by Facebook<br />
+Feb 26, 2020 — Fixed by Facebook<br />
+Feb 26, 2020 — Bounty Awarded by Facebook</p>
 
   </div><a class="u-url" href="/2020/03/11/generate-valid-signatures-for-files-hosted-in-facebook-cdns.html" hidden></a>
 </article>

