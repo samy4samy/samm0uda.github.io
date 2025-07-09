@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Bad regex used in Facebook Javascript SDK leads to account takeovers in websites that included it | Youssef Sammouda (sam0) personal blog</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="Bad regex used in Facebook Javascript SDK leads to account takeovers in websites that included it" />
+<meta name="author" content="qw" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This bug could allow an attacker to target websites that included Facebook Javascript SDK. The attacker would trick a certain website user to visit his website which would exploit a bug in the implementation used in the SDK to allow cross-origin communication between the website that included the SDK, and Facebook main website. The Facebook JS SDK is widely used by developers for various reasons like logging-in to the website using Facebook or to embed Share or Like plugins which left thousands of websites vulnerable to various attacks like account takeovers." />
+<meta property="og:description" content="This bug could allow an attacker to target websites that included Facebook Javascript SDK. The attacker would trick a certain website user to visit his website which would exploit a bug in the implementation used in the SDK to allow cross-origin communication between the website that included the SDK, and Facebook main website. The Facebook JS SDK is widely used by developers for various reasons like logging-in to the website using Facebook or to embed Share or Like plugins which left thousands of websites vulnerable to various attacks like account takeovers." />
+<link rel="canonical" href="http://localhost:4000/2020/12/31/bad-regex-in-facebook-javascript-sdk-leads-to-account-takeovers-in-third-party-websites-that-included-it.html" />
+<meta property="og:url" content="http://localhost:4000/2020/12/31/bad-regex-in-facebook-javascript-sdk-leads-to-account-takeovers-in-third-party-websites-that-included-it.html" />
+<meta property="og:site_name" content="Youssef Sammouda (sam0) personal blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-12-31T19:11:04+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Bad regex used in Facebook Javascript SDK leads to account takeovers in websites that included it" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"qw"},"dateModified":"2020-12-31T19:11:04+01:00","datePublished":"2020-12-31T19:11:04+01:00","description":"This bug could allow an attacker to target websites that included Facebook Javascript SDK. The attacker would trick a certain website user to visit his website which would exploit a bug in the implementation used in the SDK to allow cross-origin communication between the website that included the SDK, and Facebook main website. The Facebook JS SDK is widely used by developers for various reasons like logging-in to the website using Facebook or to embed Share or Like plugins which left thousands of websites vulnerable to various attacks like account takeovers.","headline":"Bad regex used in Facebook Javascript SDK leads to account takeovers in websites that included it","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2020/12/31/bad-regex-in-facebook-javascript-sdk-leads-to-account-takeovers-in-third-party-websites-that-included-it.html"},"url":"http://localhost:4000/2020/12/31/bad-regex-in-facebook-javascript-sdk-leads-to-account-takeovers-in-third-party-websites-that-included-it.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Youssef Sammouda (sam0) personal blog" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Youssef Sammouda (sam0) personal blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Bad regex used in Facebook Javascript SDK leads to account takeovers in websites that included it</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2020-12-31T19:11:04+01:00" itemprop="datePublished">Dec 31, 2020
+      </time>• <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">qw</span></span></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>This bug could allow an attacker to target websites that included Facebook Javascript SDK. The attacker would trick a certain website user to visit his website which would exploit a bug in the implementation used in the SDK to allow cross-origin communication between the website that included the SDK, and Facebook main website. The Facebook JS SDK is widely used by developers for various reasons like logging-in to the website using Facebook or to embed Share or Like plugins which left thousands of websites vulnerable to various attacks like account takeovers.</p>
+
+<p><strong>Technical Details</strong></p>
+
+<p>The Facebook JS SDK could be implemented in a website for various reasons like to Login with Facebook, Sharing, Embedding. Also the same SDK could is used to communicate with Facebook website to authenticate and serve content for Canvas/Tab applications that would be accessed via apps.facebook.com or page tabs. This is done by including the SDK in a page in your website which would have the content for the canvas application, then you would add the link of the page in your Facebook canvas application settings. If you visit apps.facebook.com/APP_ID/, you should find that the page selected would be served in an iframe and Facebook website would communicate with your website and vice versa by using postMessage method and EventListeners for cross-origin window messages. <br />
+The main key for secure cross-origin communication is to always verify the origin and destination of a certain message. Facebook failed to do that in the SDK which is included in a third party website because it was using a wrong regular expression to verify the origin of a certain cross-origin message received :</p>
+
+<p>This is a snippet of the code responsible for cross-origin communication in the SDK:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">__d</span><span class="p">(</span><span class="dl">"</span><span class="s2">sdk.XD</span><span class="dl">"</span><span class="p">,</span> <span class="p">[</span><span class="dl">"</span><span class="s2">JSSDKXDConfig</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">Log</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">QueryString</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">Queue</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">UrlMap</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">guid</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">isFacebookURI</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">resolveWindow</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">sdk.Event</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">sdk.feature</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">sdk.RPC</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">sdk.Runtime</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">sdk.Scribe</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">sdk.URI</span><span class="dl">"</span><span class="p">],</span> <span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">d</span><span class="p">,</span> <span class="nx">e</span><span class="p">,</span> <span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
+                     <span class="kd">var</span> <span class="nx">g</span> <span class="o">=</span> <span class="k">new</span><span class="p">(</span><span class="nf">b</span><span class="p">(</span><span class="dl">"</span><span class="s2">Queue</span><span class="dl">"</span><span class="p">))(),</span>
+                         <span class="nx">h</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">parent</span><span class="dl">"</span><span class="p">,</span>
+                         <span class="nx">i</span> <span class="o">=</span> <span class="kc">null</span><span class="p">,</span>
+                           <span class="nx">j</span> <span class="o">=</span> <span class="sr">/^https:</span><span class="se">\/\/</span><span class="sr">.*facebook.com$/</span><span class="p">;</span>
+<span class="p">...</span>
+
+<span class="nb">window</span><span class="p">.</span><span class="nf">addEventListener</span><span class="p">(</span><span class="dl">"</span><span class="s2">message</span><span class="dl">"</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span> <span class="p">{</span>
+                             <span class="kd">var</span> <span class="nx">c</span> <span class="o">=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">data</span><span class="p">,</span>
+                                 <span class="nx">d</span> <span class="o">=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">origin</span> <span class="o">||</span> <span class="dl">"</span><span class="s2">native</span><span class="dl">"</span><span class="p">;</span>
+                             <span class="k">if </span><span class="p">(</span><span class="o">!</span><span class="sr">/^</span><span class="se">(</span><span class="sr">https</span><span class="se">?</span><span class="sr">:</span><span class="se">\/\/</span><span class="sr">|native$</span><span class="se">)</span><span class="sr">/</span><span class="p">.</span><span class="nf">test</span><span class="p">(</span><span class="nx">d</span><span class="p">))</span> <span class="p">{</span>
+                                 <span class="nf">b</span><span class="p">(</span><span class="dl">"</span><span class="s2">Log</span><span class="dl">"</span><span class="p">).</span><span class="nf">debug</span><span class="p">(</span><span class="dl">"</span><span class="s2">Received message from invalid origin type: %s</span><span class="dl">"</span><span class="p">,</span> <span class="nx">d</span><span class="p">);</span>
+                                 <span class="k">return</span>
+                             <span class="p">}</span>
+                             <span class="k">if </span><span class="p">(</span><span class="o">!</span><span class="nx">j</span><span class="p">.</span><span class="nf">test</span><span class="p">(</span><span class="nx">d</span><span class="p">))</span> <span class="k">return</span><span class="p">;</span>
+                             <span class="k">if </span><span class="p">(</span><span class="k">typeof</span> <span class="nx">c</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">string</span><span class="dl">"</span><span class="p">)</span> <span class="nf">r</span><span class="p">(</span><span class="nx">c</span><span class="p">,</span> <span class="nx">d</span><span class="p">);</span>
+                             <span class="k">else</span> <span class="p">{</span>
+                                 <span class="k">if </span><span class="p">(</span><span class="nx">a</span><span class="p">.</span><span class="nx">source</span> <span class="o">==</span> <span class="nx">parent</span> <span class="o">&amp;&amp;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">xdArbiterRegisterAck</span> <span class="o">&amp;&amp;</span> <span class="nx">j</span><span class="p">.</span><span class="nf">test</span><span class="p">(</span><span class="nx">d</span><span class="p">))</span> <span class="p">{</span>
+                                     <span class="k">typeof</span> <span class="nx">a</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">xdArbiterRegisterAck</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">string</span><span class="dl">"</span> <span class="o">&amp;&amp;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">xdArbiterRegisterAck</span> <span class="o">!==</span> <span class="dl">""</span> <span class="o">&amp;&amp;</span> <span class="nf">p</span><span class="p">(</span><span class="nx">a</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">xdArbiterRegisterAck</span><span class="p">);</span>
+                                     <span class="nx">g</span><span class="p">.</span><span class="nf">isStarted</span><span class="p">()</span> <span class="o">||</span> <span class="nx">g</span><span class="p">.</span><span class="nf">start</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span> <span class="p">{</span>
+                                         <span class="k">if </span><span class="p">(</span><span class="nx">a</span> <span class="o">==</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+                                             <span class="nf">b</span><span class="p">(</span><span class="dl">"</span><span class="s2">Log</span><span class="dl">"</span><span class="p">).</span><span class="nf">warn</span><span class="p">(</span><span class="dl">"</span><span class="s2">Discarding null message from %s to %s</span><span class="dl">"</span><span class="p">,</span> <span class="nx">m</span><span class="p">,</span> <span class="nx">d</span><span class="p">);</span>
+                                             <span class="k">return</span>
+                                         <span class="p">}</span>
+                                         <span class="kd">var</span> <span class="nx">c</span> <span class="o">=</span> <span class="nx">parent</span><span class="p">;</span>
+                                         <span class="k">typeof</span> <span class="nx">a</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">object</span><span class="dl">"</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">a</span><span class="p">.</span><span class="nx">relation</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">string</span><span class="dl">"</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">c</span> <span class="o">=</span> <span class="nf">b</span><span class="p">(</span><span class="dl">"</span><span class="s2">resolveWindow</span><span class="dl">"</span><span class="p">)(</span><span class="nx">a</span><span class="p">.</span><span class="nx">relation</span><span class="p">));</span>
+                                         <span class="p">((</span><span class="nx">c</span> <span class="o">=</span> <span class="nx">c</span><span class="p">)</span> <span class="o">!=</span> <span class="kc">null</span> <span class="p">?</span> <span class="nx">c</span> <span class="p">:</span> <span class="nx">parent</span><span class="p">).</span><span class="nf">postMessage</span><span class="p">({</span>
+                                             <span class="na">xdArbiterHandleMessage</span><span class="p">:</span> <span class="o">!</span><span class="mi">0</span><span class="p">,</span>
+                                             <span class="na">message</span><span class="p">:</span> <span class="nx">a</span><span class="p">,</span>
+                                             <span class="na">origin</span><span class="p">:</span> <span class="nx">m</span>
+                                         <span class="p">},</span> <span class="nx">d</span><span class="p">)</span>
+                                     <span class="p">});</span>
+                                     <span class="k">return</span>
+                                 <span class="p">}</span>
+                                 <span class="nf">b</span><span class="p">(</span><span class="dl">"</span><span class="s2">Log</span><span class="dl">"</span><span class="p">).</span><span class="nf">warn</span><span class="p">(</span><span class="dl">"</span><span class="s2">Received message of type %s from %s, expected a string. %s</span><span class="dl">"</span><span class="p">,</span> <span class="k">typeof</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">m</span><span class="p">,</span> <span class="nc">ES</span><span class="p">(</span><span class="dl">"</span><span class="s2">JSON</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">stringify</span><span class="dl">"</span><span class="p">,</span> <span class="o">!</span><span class="mi">1</span><span class="p">,</span> <span class="nx">c</span><span class="p">));</span>
+                                 <span class="k">return</span>
+                             <span class="p">}</span>
+                         <span class="p">});</span>
+</code></pre></div></div>
+
+<p>If we examine the code, we find that there is one Eventlistener for cross-origin messages inside the SDK. Once a message is received, it would check if the origin starts with https (or native) , and if it checks against the regex “<strong>/^https:\/\/.*facebook\.com$/</strong>” <br />
+As you may notice the regex was meant to target facebook.com and its subdomains however an escaped dot is missing before facebook.com ( correct one would be <strong>/^https:\/\/.*\.facebook\.com$/</strong> ). <br />
+This allows a domain like testpocfacebook.com to pass the origin check done here.<br />
+The message sent by testpocfacebook.com would be <strong>{“xdArbiterRegisterAck”:”canvas”}</strong> and the SDK would return an FB_RPC json formatted message to the parent window. The message would include “fallback_redirect_uri” which is the value of window.location.href. <br />
+Here comes the exploitation of this bug. Like explained above, the SDK includes code for all possible functionalities, a website could use the SDK to only use the sharing functionality however the code for the canvas functionality would still be included which means that the website would have an EventListener for cross origin messages which would now accept messages from the attacker owned website by exploiting the bug . As you may noticed in the code above, the source of the message is checked and it should be the parent window which means that for this to work, the targeted page must also allow itself to be iframed. <br />
+To conclude, If we can find a page in a website which includes the Facebook Javascript SDK and can be iframed, we can leak the window.location.href of that page.</p>
+
+<p><strong>How to abuse this</strong> <strong>?</strong></p>
+
+<p>This could be used to leak information after redirects in the targeted website. For example, if we iframe <strong>https://example.com/me</strong> page which would redirect to <strong>https://example.com/profile/PROFILE_ID</strong>, the /profile/ page can be iframed, we send the message after the redirect and we would receive the logged-in user profile id.</p>
+
+<p>Same attack could apply to oauth or other authorization mechanisms’ callback endpoints which includes the Facebook SDK. Since many websites includes the Facebook JS SDK in every page ( same way the google analytics tag is included), this would enables account takeovers or the stealing of sensitive tokens. This would work the same way as the previous example, we assume that the website uses Google or Facebook for authentication, we would iframe https://accounts.google.com/o/oauth2/auth or https://www.facebook.com/dialog/oauth with parameters that includes the targeted website Google or Facebook application details (redirect_uri and app_id), if the victim is already logged in to his/her Facebook or Google accounts, these urls would redirect to the callback endpoints in the targeted website, if the callback endpoints could be iframed, then we would send the cross-origin message and we would receive the access_token or code ( since we’re receiving current window.location.href inside the iframe)</p>
+
+<p>This attack could easily be launched against websites that hosts canvas apps or page tabs. The page that is used in canvas app can be iframed to allow itself to be included in an iframe inside apps.facebook.com, and also the same page ,most of the time, would be used as a Facebook oauth callback endpoint. <br />
+We would embed an iframe inside https://testpocfacebook.com/ with the following src ‘<strong>https://www.facebook.com/dialog/oauth?client_id=APP&amp;redirect_uri=REDIRECT_URI&amp;response_type=token</strong>‘. If the user authorised this app before, this would directly redirect to REDIRECT_URI which would have the Facebook SDK script embedded. At that point, the parent window would sent the cross-origin message and receive the access_token embedded inside fallback_redirect_uri.</p>
+
+<p>The attacker website could have 100 iframes with each iframe pointing to different website hosting a canvas application which would increase the chance of having a visitor that used one of these applications before and we would finally receive an access_token with permissions selected in the application scope.</p>
+
+<p><strong>Quick Demonstration</strong></p>
+
+<p>This PoC was used in the report sent to Facebook (Since i wasn’t able to include PoCs for third-party websites) . Although this didn’t work since www.instagram.com callback endpoint didn’t allow itself to be iframed (X-Frame-Options: deny header was set), however the endpoint included the Facebook JS SDK. If a bypass was found for the iframing problem, this could have lead to a full Facebook account takeover since the Instagram.com Facebook application is a first-party application and generated access_tokens would have access to https://graph.facebook.com/graphql endpoint.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&lt;</span><span class="nx">html</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="nx">head</span><span class="o">&gt;</span>
+<span class="nb">window</span><span class="p">.</span><span class="nf">addEventListener</span><span class="p">(</span><span class="dl">"</span><span class="s2">message</span><span class="dl">"</span><span class="p">,</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">data</span><span class="p">);</span> <span class="p">},</span> <span class="kc">false</span><span class="p">);</span>
+<span class="o">&lt;</span><span class="sr">/head</span><span class="err">&gt;
+</span><span class="o">&lt;</span><span class="nx">body</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="nx">script</span><span class="o">&gt;</span><span class="kd">function</span> <span class="nf">fun</span><span class="p">()</span> <span class="p">{</span>
+<span class="kd">var</span> <span class="nx">ifr</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nf">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">ifr</span><span class="dl">'</span><span class="p">);</span>
+<span class="nx">ifr</span><span class="p">.</span><span class="nx">contentWindow</span><span class="p">.</span><span class="nf">postMessage</span><span class="p">({</span><span class="dl">"</span><span class="s2">xdArbiterRegisterAck</span><span class="dl">"</span><span class="p">:</span><span class="dl">"</span><span class="s2">canvas</span><span class="dl">"</span><span class="p">},</span> <span class="dl">'</span><span class="s1">*</span><span class="dl">'</span><span class="p">);</span>
+<span class="p">}</span><span class="o">&lt;</span><span class="sr">/script</span><span class="err">&gt;
+</span><span class="o">&lt;</span><span class="nx">iframe</span> <span class="nx">src</span><span class="o">=</span><span class="dl">"</span><span class="s2">https://www.facebook.com/dialog/oauth?client_id=124024574287414&amp;redirect_uri=https://www.instagram.com/accounts/signup/&amp;scope=email&amp;response_type=token</span><span class="dl">"</span> <span class="nx">onload</span><span class="o">=</span><span class="dl">"</span><span class="s2">fun(this)</span><span class="dl">"</span><span class="o">/&gt;</span>
+<span class="o">&lt;</span><span class="sr">/body</span><span class="err">&gt;
+</span><span class="o">&lt;</span><span class="sr">/html</span><span class="err">&gt;
+</span></code></pre></div></div>
+
+<p>If a logged-in Facebook user visits the attacker website, https://www.facebook.com/dialog/oauth would be requested in the iframe, a redirect would be made to https://www.instagram.com/accounts/signup/ with an access_token in the hash fragment part of the URL. The endpoint /accounts/signup/ includes the Facebook SDK ( although it can’t be iframed , for the sake of the example we’ll assume it can). A cross-origin message would be send to the iframe window and we would receive a message with the Facebook user access_token included. We may then takeover the account :’).</p>
+
+<p>Many famous websites that used the Facebook Javascript SDK were vulnerable to account takeovers of their users using the same attack logic. I was happy that i found this bug and reported it in time before it was misused.</p>
+
+<p><strong>Timeline</strong></p>
+
+<p>Nov 20, 2020— Report Sent <br />
+Nov 27, 2020— Acknowledged by Facebook<br />
+Dec 4, 2020— Fixed by Facebook<br />
+Dec 31, 2020 — $10K bounty awarded by Facebook.</p>
+
+
+  </div><a class="u-url" href="/2020/12/31/bad-regex-in-facebook-javascript-sdk-leads-to-account-takeovers-in-third-party-websites-that-included-it.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Youssef Sammouda (sam0) personal blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Youssef Sammouda (sam0) personal blog</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/samm0uda"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">samm0uda</span></a></li><li><a href="https://www.twitter.com/samm0uda"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">samm0uda</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>The goal of this blog is to share write-ups about bugs i have found in Facebook and reported to them under the Facebook bug bounty program.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

