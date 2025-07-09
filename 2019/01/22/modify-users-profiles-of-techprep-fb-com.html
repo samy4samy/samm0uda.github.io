@@ -57,9 +57,9 @@
 <p>2-After logging in,When navigating to my profile,(<a href="https://techprep.fb.com/profile/PTqqSChCNX/">https://techprep.fb.com/profile/PTqqSXXXXX/</a>) an api call to <a href="http://api.techprep.fb.com/">api.techprep.fb.com</a> is made requesting user’s data.<br />
 The request is captured by burp .</p>
 
-<p><a href="http://127.0.0.1:4000/assets/img/2019/01/1_PQWEAqLw2XCIo9L7tFh_5Q.png"><img src="http://127.0.0.1:4000/assets/img/2019/01/1_PQWEAqLw2XCIo9L7tFh_5Q.png" alt="" /></a>3-I replay the same request from the previous step but i remove the “where” and the “limit” from the body , and as a respond i get all users profiles options (name, user.objectId ,facebookId ,tp_resource_competency, tp_target)</p>
+<p><a href="https://ysamm.com/assets/img/2019/01/1_PQWEAqLw2XCIo9L7tFh_5Q.png"><img src="https://ysamm.com/assets/img/2019/01/1_PQWEAqLw2XCIo9L7tFh_5Q.png" alt="" /></a>3-I replay the same request from the previous step but i remove the “where” and the “limit” from the body , and as a respond i get all users profiles options (name, user.objectId ,facebookId ,tp_resource_competency, tp_target)</p>
 
-<p><a href="http://127.0.0.1:4000/assets/img/2019/01/1_Rsom8vVhh_xjnwtmsUfy8w.png"><img src="http://127.0.0.1:4000/assets/img/2019/01/1_Rsom8vVhh_xjnwtmsUfy8w.png" alt="" /></a>(my interest from this request is to gather all profile ids (noted “user.objectId”)</p>
+<p><a href="https://ysamm.com/assets/img/2019/01/1_Rsom8vVhh_xjnwtmsUfy8w.png"><img src="https://ysamm.com/assets/img/2019/01/1_Rsom8vVhh_xjnwtmsUfy8w.png" alt="" /></a>(my interest from this request is to gather all profile ids (noted “user.objectId”)</p>
 
 <p><em>In my Example:</em> (the user.objectid is PTqqSxxxxX (“user”:{“objectId”:”PTqqSxxxxX”}) is the same id in the profile url the <a href="http://techprep.fb.com/profile/PTqqSChCNX">http://techprep.fb.com/profile/PTqqSxxxxX</a>)</p>
 
@@ -67,7 +67,7 @@ The request is captured by burp .</p>
 I intercept the request (Picture 3) ( <a href="http://api.techprep.fb.com/parse/classes/Profile/TfluqwN0cT">http://api.techprep.fb.com/parse/classes/Profile/TfluqwN0cT</a> )<br />
 Then i replace “tp_resource_age”:”8–11″ with user”:{“__type”:”Pointer”,”className”:”_User”,”objectId”:”thqsXXXX4i”}</p>
 
-<p><a href="http://127.0.0.1:4000/assets/img/2019/01/1_32nxtz-KBDI5Iym5tMRLzA.png"><img src="http://127.0.0.1:4000/assets/img/2019/01/1_32nxtz-KBDI5Iym5tMRLzA.png" alt="" /></a>thqsXXXX4i is the user.objectid (profile id) of the victim</p>
+<p><a href="https://ysamm.com/assets/img/2019/01/1_32nxtz-KBDI5Iym5tMRLzA.png"><img src="https://ysamm.com/assets/img/2019/01/1_32nxtz-KBDI5Iym5tMRLzA.png" alt="" /></a>thqsXXXX4i is the user.objectid (profile id) of the victim</p>
 
 <p>Now we visit the victim profile and we notice that it’s showing our profile and the victim’s profile is gone.<br />
 In this case the victim can’t do anything (he can’t update his age or his account privacy settings “to private or public”)</p>

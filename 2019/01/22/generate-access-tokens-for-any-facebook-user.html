@@ -54,7 +54,7 @@ I found this bug by mistake when I was testing some Facebook endpoints used in t
 <p>The vulnerable endpoint returns a page access_token when making a POST request to it along with the parameter <strong>page_id.</strong> The issue here is that theendpoint doesn’t check if the provided value for the page_id is actually an id of a “<strong>page</strong>” and not another object like “<strong>user</strong>”. This allowed me to make the request and change the page_id value to any Facebook user id and as a response to this request I get the access token of that user.</p>
 
 <blockquote>
-  <h2><a href="http://127.0.0.1:4000/assets/img/2019/01/1_-4LhCPJ07BYQlLlv4dD6xA.png"><img src="http://127.0.0.1:4000/assets/img/2019/01/1_-4LhCPJ07BYQlLlv4dD6xA.png" alt="" /></a></h2>
+  <h2><a href="https://ysamm.com/assets/img/2019/01/1_-4LhCPJ07BYQlLlv4dD6xA.png"><img src="https://ysamm.com/assets/img/2019/01/1_-4LhCPJ07BYQlLlv4dD6xA.png" alt="" /></a></h2>
 </blockquote>
 
 <p><strong>Impact</strong><br />

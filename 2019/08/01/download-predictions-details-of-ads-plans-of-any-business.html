@@ -58,7 +58,7 @@
   <li>The attacker get invited by a business admin to view an ad campaign plan where he has a limited access to it ( he can’t copy the plan or view any details)</li>
 </ol>
 
-<div class="wp-block-image">[![](http://127.0.0.1:4000/assets/img/2019/08/1.png)](http://127.0.0.1:4000/assets/img/2019/08/1.png)These are the options chosen by the business admin when sharing the link with the attacker</div>
+<div class="wp-block-image">[![](https://ysamm.com/assets/img/2019/08/1.png)](https://ysamm.com/assets/img/2019/08/1.png)These are the options chosen by the business admin when sharing the link with the attacker</div>
 <ol>
   <li>
     <p>The attacker opens the short link received from the business admin. He get redirected to an URL of this format: <br />
@@ -72,7 +72,7 @@ He now extracts the prediction_id of this ad plan by viewing the source code and
 
 <p><code class="language-plaintext highlighter-rouge">POST /ads/reachfrequency/prediction_download/&lt;br&gt;&lt;/br&gt;Host: www.facebook.com&lt;br&gt;&lt;/br&gt;&lt;br&gt;&lt;/br&gt;rf_prediction_id=XXX</code></p>
 
-<div class="wp-block-image">[![](http://127.0.0.1:4000/assets/img/2019/08/resu.png)](http://127.0.0.1:4000/assets/img/2019/08/resu.png)Result of the request sent to the endpoint.</div>
+<div class="wp-block-image">[![](https://ysamm.com/assets/img/2019/08/resu.png)](https://ysamm.com/assets/img/2019/08/resu.png)Result of the request sent to the endpoint.</div>
 <ol>
   <li>Now the attacker has permanent access to this ad campaign plan and all its details even if his invitation get revoked. <br />
 Also the attacker can access all the other ad plans, predictions and other versions of the plan owned by the business. This is done by bruteforcing the ids based on the one found using the “trp_is_plan_purchased” method so he only needs to trick the admin once and then he can get all future plans.</li>
